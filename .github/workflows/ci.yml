@@ -27,10 +27,6 @@ jobs:
       - name: Format check
         run: uv run ruff format --check .
       - name: Tests
-        env:
-          # Tests don't touch the DB, but Settings requires DATABASE_URL to load.
-          DATABASE_URL: postgresql+psycopg://test:test@localhost/test
-          REDIS_URL: redis://localhost:6379/0
         run: uv run pytest -q
 
   web:
