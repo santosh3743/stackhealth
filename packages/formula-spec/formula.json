@@ -1,0 +1,43 @@
+{
+  "version": "v1.0",
+  "published_at": "2026-05-28",
+  "summary": "Initial formula. Security 30, Quality 25, Hygiene 25, Community 20.",
+  "spec_url": "https://github.com/stackhealth-dev/formula/blob/v1.0/v1.0.md",
+  "dimension_weights": {
+    "security": 0.30,
+    "quality": 0.25,
+    "hygiene": 0.25,
+    "community": 0.20
+  },
+  "security": {
+    "scorecard": 0.40,
+    "semgrep": 0.40,
+    "dependencies": 0.20
+  },
+  "quality": {
+    "complexity": 0.30,
+    "lint_density": 0.25,
+    "duplication": 0.20,
+    "test_signal": 0.15,
+    "file_size": 0.10
+  },
+  "community": {
+    "activity": 0.35,
+    "contributors": 0.25,
+    "popularity": 0.20,
+    "responsiveness": 0.20
+  },
+  "letter_grade_thresholds": [
+    { "min": 95, "grade": "A+" },
+    { "min": 90, "grade": "A"  },
+    { "min": 85, "grade": "A-" },
+    { "min": 80, "grade": "B+" },
+    { "min": 75, "grade": "B"  },
+    { "min": 70, "grade": "B-" },
+    { "min": 65, "grade": "C+" },
+    { "min": 60, "grade": "C"  },
+    { "min": 55, "grade": "C-" },
+    { "min": 50, "grade": "D"  },
+    { "min": 0,  "grade": "F"  }
+  ]
+}

@@ -1,0 +1,26 @@
+# Fly.io config for the RQ worker process.
+# Deploy:  fly deploy --config infra/fly.worker.toml
+
+app = "stackhealth-worker"
+primary_region = "iad"
+
+[build]
+  dockerfile = "../infra/Dockerfile"
+  build-target = "worker"
+
+[env]
+  ENV = "production"
+
+# No http_service — the worker doesn't accept connections.
+[processes]
+  worker = "python -m stackhealth.worker.main"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  processes = ["worker"]
+
+# Keep at least one worker running; scale up manually via `fly scale count 2`.
+[deploy]
+  release_command = ""
+  strategy = "rolling"
