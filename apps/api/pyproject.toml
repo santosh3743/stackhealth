@@ -45,7 +45,12 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "RUF"]
-ignore = ["E501"]  # line length handled by formatter
+ignore = [
+    "E501",   # line length handled by formatter
+    "B008",   # FastAPI dependency injection idiom: `db: Session = Depends(get_db)`
+    "UP042",  # `str, Enum` mixin is what SQLAlchemy expects; StrEnum would break col binding
+    "RUF005", # tuple concatenation
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

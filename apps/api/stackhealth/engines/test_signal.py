@@ -6,6 +6,7 @@ We score test *presence*:
 - coverage badge in README or coverage report file → +20
 - codecov.yml / coverage.xml present → +10
 """
+
 import logging
 import re
 from dataclasses import dataclass, field

@@ -2,6 +2,7 @@
 
 Security: see docs/12-SECURITY-AND-PRIVACY.md §"Scanning sandbox".
 """
+
 import logging
 import subprocess
 import tempfile
@@ -27,10 +28,14 @@ def shallow_clone(repo_url: str):
     with tempfile.TemporaryDirectory(prefix="sh-scan-") as tmp:
         workdir = Path(tmp) / "repo"
         cmd = [
-            "git", "clone",
-            "--depth", "1",
-            "--filter", f"blob:limit={settings.clone_size_limit_mb}m",
-            repo_url, str(workdir),
+            "git",
+            "clone",
+            "--depth",
+            "1",
+            "--filter",
+            f"blob:limit={settings.clone_size_limit_mb}m",
+            repo_url,
+            str(workdir),
         ]
         log.info("cloning", extra={"repo_url": repo_url})
         try:
@@ -47,7 +52,9 @@ def shallow_clone(repo_url: str):
 
         commit_sha = subprocess.run(
             ["git", "-C", str(workdir), "rev-parse", "HEAD"],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         ).stdout.strip()
 
         yield commit_sha, workdir

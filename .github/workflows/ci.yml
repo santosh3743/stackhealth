@@ -32,27 +32,24 @@ jobs:
   web:
     name: Web
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
+      # pnpm reads its version from packageManager in package.json; don't
+      # pass `version:` here or pnpm/action-setup errors with ERR_PNPM_BAD_PM_VERSION.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "pnpm"
-          cache-dependency-path: apps/web/pnpm-lock.yaml
-      - name: Install
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install (workspace)
         run: pnpm install --frozen-lockfile
       - name: Typecheck
-        run: pnpm typecheck
+        run: pnpm --filter web typecheck
       - name: Lint
-        run: pnpm lint
+        run: pnpm --filter web lint
       - name: Build
-        run: pnpm build
+        run: pnpm --filter web build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8000
           NEXT_PUBLIC_SITE_URL: http://localhost:3000

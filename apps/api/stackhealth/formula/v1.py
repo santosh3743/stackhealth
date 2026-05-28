@@ -7,6 +7,7 @@ This file is the *executable mirror* of:
 KEEP THEM IN SYNC. Any change to weights/thresholds here MUST land in those
 two files in the same commit.
 """
+
 from enum import StrEnum
 
 FORMULA_VERSION = "v1.0"
@@ -80,6 +81,7 @@ def _clip(v: float) -> int:
 
 # --- Sub-score computations ---
 
+
 def security_score(scorecard_0_10: float, semgrep_0_100: float, dependency_0_100: float) -> int:
     """Per docs/03 §1.
 
@@ -134,9 +136,6 @@ def overall(security: int, quality: int, hygiene: int, community: int) -> tuple[
     All four inputs are 0-100 sub-scores. Returns (score, grade).
     """
     score = _clip(
-        W_SECURITY * security
-        + W_QUALITY * quality
-        + W_HYGIENE * hygiene
-        + W_COMMUNITY * community
+        W_SECURITY * security + W_QUALITY * quality + W_HYGIENE * hygiene + W_COMMUNITY * community
     )
     return score, grade_from_score(score)

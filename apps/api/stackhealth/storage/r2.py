@@ -1,4 +1,5 @@
 """Cloudflare R2 (S3-compatible) client for raw scan artifacts."""
+
 import json
 from functools import lru_cache
 

@@ -5,6 +5,7 @@ Usage:
     if not allow(f"ip:{ip}", limit=5, window_seconds=3600):
         raise HTTPException(429, "rate_limited")
 """
+
 import time
 from functools import lru_cache
 

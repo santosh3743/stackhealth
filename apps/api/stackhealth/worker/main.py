@@ -8,17 +8,18 @@ We set OBJC_DISABLE_INITIALIZE_FORK_SAFETY before any imports that might touch
 Foundation, and additionally use SimpleWorker which runs jobs in-process — no
 fork at all. This is fine for a single-tenant deploy; Fly.io scales horizontally.
 """
+
 import os
 import sys
 
 os.environ.setdefault("OBJC_DISABLE_INITIALIZE_FORK_SAFETY", "YES")
 
-import logging  # noqa: E402
+import logging
 
-from redis import Redis  # noqa: E402
-from rq import Queue, SimpleWorker  # noqa: E402
+from redis import Redis
+from rq import Queue, SimpleWorker
 
-from stackhealth.config import settings  # noqa: E402
+from stackhealth.config import settings
 
 QUEUE_NAME = "stackhealth"
 

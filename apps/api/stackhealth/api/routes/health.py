@@ -1,4 +1,5 @@
 """GET /api/health and GET /api/stats — public liveness + stats."""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session

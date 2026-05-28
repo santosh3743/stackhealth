@@ -3,6 +3,7 @@
 Designed to be tolerant: each engine is optional. If a binary is missing or an
 engine raises, the scan continues and `partial=True` is set on the result.
 """
+
 import json
 import logging
 import os
@@ -11,10 +12,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from stackhealth.config import settings
 from stackhealth.engines import (
-    clone,
     cloc,
+    clone,
     community,
     complexity,
     duplication,
@@ -31,9 +31,11 @@ from stackhealth.formula.v1 import (
     FORMULA_VERSION,
     LetterGrade,
     community_score,
-    overall as overall_score,
     quality_score,
     security_score,
+)
+from stackhealth.formula.v1 import (
+    overall as overall_score,
 )
 
 log = logging.getLogger(__name__)
@@ -48,6 +50,7 @@ class EngineFailure:
 @dataclass
 class PipelineFindings:
     """Findings to persist into scan_findings table."""
+
     engine: str
     severity: str
     rule_id: str | None
@@ -77,7 +80,7 @@ class PipelineResult:
 def _safe(engine_name: str, fn, failures: list[EngineFailure], default=None):
     try:
         return fn()
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         log.warning("engine %s failed: %s", engine_name, e)
         failures.append(EngineFailure(engine=engine_name, reason=f"{type(e).__name__}: {e}"))
         return default
@@ -121,9 +124,7 @@ def run(scan_id: str, owner: str, name: str) -> PipelineResult:
             tool_vers["cloc"] = tool_version("cloc") or "unknown"
 
         # 4. Hygiene (always runs — pure filesystem).
-        days_since = (
-            (datetime.now(UTC) - meta.pushed_at).days if meta.pushed_at else None
-        )
+        days_since = (datetime.now(UTC) - meta.pushed_at).days if meta.pushed_at else None
         hyg = hygiene.evaluate(
             workdir,
             license_spdx=meta.license_spdx,
@@ -149,7 +150,9 @@ def run(scan_id: str, owner: str, name: str) -> PipelineResult:
 
         # 5. Test signal.
         ts = _safe(
-            "test_signal", lambda: test_signal.run(workdir), failures,
+            "test_signal",
+            lambda: test_signal.run(workdir),
+            failures,
             default=test_signal.TestSignalResult(score=0, breakdown={}),
         )
         breakdown["test_signal_breakdown"] = ts.breakdown
@@ -190,9 +193,12 @@ def run(scan_id: str, owner: str, name: str) -> PipelineResult:
                 critical=tv.critical, high=tv.high, medium=tv.medium, low=tv.low
             )
             for f in tv.findings[:300]:
-                sev = {"CRITICAL": "critical", "HIGH": "high", "MEDIUM": "medium", "LOW": "low"}.get(
-                    f.severity, "low"
-                )
+                sev = {
+                    "CRITICAL": "critical",
+                    "HIGH": "high",
+                    "MEDIUM": "medium",
+                    "LOW": "low",
+                }.get(f.severity, "low")
                 findings.append(
                     PipelineFindings(
                         engine="trivy",
@@ -249,9 +255,7 @@ def run(scan_id: str, owner: str, name: str) -> PipelineResult:
     # 13. Community signals.
     com_sig = _safe(
         "community",
-        lambda: community.collect(
-            owner, name, stars=meta.stars, pushed_at=meta.pushed_at
-        ),
+        lambda: community.collect(owner, name, stars=meta.stars, pushed_at=meta.pushed_at),
         failures,
         default=community.CommunitySignals(stars=meta.stars),
     )
@@ -281,20 +285,22 @@ def run(scan_id: str, owner: str, name: str) -> PipelineResult:
     comm = community_score(activity=act, contributors=cont, popularity=pop, responsiveness=resp)
     total, grade = overall_score(sec, qual, hyg_score, comm)
 
-    breakdown.update({
-        "scorecard": round(sc_aggregate * 10),
-        "semgrep": sem_score,
-        "dependencies": dep_score,
-        "complexity": cx_score,
-        "lint_density": lint_score,
-        "duplication": dup_score,
-        "test_signal": ts.score,
-        "file_size": file_size_s,
-        "activity": act,
-        "contributors": cont,
-        "popularity": pop,
-        "responsiveness": resp,
-    })
+    breakdown.update(
+        {
+            "scorecard": round(sc_aggregate * 10),
+            "semgrep": sem_score,
+            "dependencies": dep_score,
+            "complexity": cx_score,
+            "lint_density": lint_score,
+            "duplication": dup_score,
+            "test_signal": ts.score,
+            "file_size": file_size_s,
+            "activity": act,
+            "contributors": cont,
+            "popularity": pop,
+            "responsiveness": resp,
+        }
+    )
 
     tool_vers["formula"] = FORMULA_VERSION
 

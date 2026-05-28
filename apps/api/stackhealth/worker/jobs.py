@@ -3,6 +3,7 @@
 The single public job is `run_scan(scan_id)`. The actual engine orchestration
 lives in `worker.pipeline.run` — this module is just the persistence shim.
 """
+
 import logging
 import uuid
 from datetime import UTC, datetime
@@ -12,7 +13,8 @@ from sqlalchemy import select
 from stackhealth.database import SessionLocal
 from stackhealth.models import Repo, Scan, ScanFinding
 from stackhealth.models.finding import FindingEngine, FindingSeverity
-from stackhealth.models.scan import LetterGrade as ScanLetterGrade, ScanStatus
+from stackhealth.models.scan import LetterGrade as ScanLetterGrade
+from stackhealth.models.scan import ScanStatus
 from stackhealth.worker import pipeline
 
 log = logging.getLogger(__name__)
@@ -53,7 +55,7 @@ def run_scan(scan_id: str | uuid.UUID) -> None:
 
     try:
         result = pipeline.run(str(scan_uuid), owner, name)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.exception("scan %s failed", scan_uuid)
         with SessionLocal() as db:
             s = db.scalar(select(Scan).where(Scan.id == scan_uuid))

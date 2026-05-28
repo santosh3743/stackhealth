@@ -3,6 +3,7 @@
 Run with:
     uv run uvicorn stackhealth.api.main:app --reload --port 8000
 """
+
 from contextlib import asynccontextmanager
 
 import sentry_sdk

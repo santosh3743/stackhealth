@@ -1,4 +1,5 @@
 """Repo model — one row per unique repository ever scanned."""
+
 import uuid
 from datetime import datetime
 
@@ -29,9 +30,7 @@ class Repo(Base):
     first_seen_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     @property
     def full_name(self) -> str:

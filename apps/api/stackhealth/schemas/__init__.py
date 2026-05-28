@@ -1,4 +1,5 @@
 """Pydantic request/response schemas."""
+
 from stackhealth.schemas.scan import (
     ScanCreate,
     ScanCreateResponse,

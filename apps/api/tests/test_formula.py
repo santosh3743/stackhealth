@@ -1,6 +1,7 @@
 """Tests for the formula. These are the canonical examples — if the formula
 changes, the values here must be updated in lockstep with the docs/spec files.
 """
+
 import pytest
 
 from stackhealth.formula.v1 import (

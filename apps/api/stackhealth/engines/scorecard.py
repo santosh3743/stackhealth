@@ -5,6 +5,7 @@ Strategy (docs/03 §1a):
     2. If unavailable, run the `scorecard` binary locally.
     3. Parse aggregate score (0-10) and per-check breakdown.
 """
+
 import json
 import logging
 import os
@@ -37,10 +38,7 @@ def _from_api(owner: str, name: str) -> ScorecardResult | None:
     aggregate = float(data.get("score", -1))
     if aggregate < 0:
         return None
-    checks = {
-        c.get("name", "?"): float(c.get("score", -1))
-        for c in data.get("checks", [])
-    }
+    checks = {c.get("name", "?"): float(c.get("score", -1)) for c in data.get("checks", [])}
     return ScorecardResult(aggregate=aggregate, checks=checks, raw=data, source="api")
 
 

@@ -1,4 +1,5 @@
 """Trivy filesystem dependency scan. Reference: docs/03 §1c."""
+
 import json
 import logging
 from dataclasses import dataclass, field
@@ -34,11 +35,15 @@ def run(workdir: Path, timeout: int = 180) -> TrivyResult:
     binpath = require("trivy")
     proc = run_capture(
         [
-            binpath, "fs",
-            "--scanners", "vuln",
-            "--format", "json",
+            binpath,
+            "fs",
+            "--scanners",
+            "vuln",
+            "--format",
+            "json",
             "--quiet",
-            "--severity", "CRITICAL,HIGH,MEDIUM,LOW",
+            "--severity",
+            "CRITICAL,HIGH,MEDIUM,LOW",
             str(workdir),
         ],
         timeout=timeout,

@@ -1,4 +1,5 @@
 """Semgrep p/security-audit runner. Reference: docs/03 §1b."""
+
 import json
 import logging
 from dataclasses import dataclass, field
@@ -31,11 +32,16 @@ def run(workdir: Path, timeout: int = 90) -> SemgrepResult:
     binpath = require("semgrep")
     proc = run_capture(
         [
-            binpath, "scan",
-            "--config", "p/security-audit",
-            "--json", "--quiet",
-            "--timeout", "60",
-            "--metrics", "off",
+            binpath,
+            "scan",
+            "--config",
+            "p/security-audit",
+            "--json",
+            "--quiet",
+            "--timeout",
+            "60",
+            "--metrics",
+            "off",
             "--no-git-ignore",
             str(workdir),
         ],
@@ -73,8 +79,11 @@ def run(workdir: Path, timeout: int = 90) -> SemgrepResult:
         )
 
     return SemgrepResult(
-        errors=errors, warnings=warnings, info=info,
-        findings=findings, raw=data,
+        errors=errors,
+        warnings=warnings,
+        info=info,
+        findings=findings,
+        raw=data,
     )
 
 

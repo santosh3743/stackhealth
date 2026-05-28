@@ -1,4 +1,5 @@
 """Common FastAPI dependencies."""
+
 from collections.abc import Iterator
 
 from fastapi import Depends, Request
@@ -24,4 +25,4 @@ def get_client_ip(request: Request) -> str | None:
 
 
 # Re-exports
-__all__ = ["get_db", "get_client_ip", "Depends"]
+__all__ = ["Depends", "get_client_ip", "get_db"]

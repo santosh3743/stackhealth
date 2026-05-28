@@ -1,4 +1,5 @@
 """Application settings, loaded from environment variables / .env files."""
+
 from functools import lru_cache
 
 from pydantic import Field

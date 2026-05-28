@@ -2,6 +2,7 @@
 
 Spec: docs/09-API-DESIGN.md
 """
+
 import logging
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -35,9 +36,7 @@ def _queue() -> Queue:
 
 
 def _err(code: str, message: str, http: int) -> HTTPException:
-    return HTTPException(
-        status_code=http, detail={"error": {"code": code, "message": message}}
-    )
+    return HTTPException(status_code=http, detail={"error": {"code": code, "message": message}})
 
 
 @router.post(
@@ -89,9 +88,7 @@ def create_scan(
         if code == "repo_not_found":
             raise _err("repo_not_found", "Repo not found or private.", 404) from e
         if code == "rate_limited":
-            raise _err(
-                "github_rate_limited", "Upstream GitHub rate limit hit.", 503
-            ) from e
+            raise _err("github_rate_limited", "Upstream GitHub rate limit hit.", 503) from e
         raise _err("github_error", code, 502) from e
     if meta.is_private:
         raise _err("repo_private", "Private repos are not supported in MVP.", 404)
@@ -156,8 +153,10 @@ def _scan_to_read(scan: Scan, repo: Repo) -> ScanRead:
     return ScanRead(
         id=scan.id,
         repo=RepoMini(
-            owner=repo.owner, name=repo.name,
-            stars=repo.stars, language=repo.language,
+            owner=repo.owner,
+            name=repo.name,
+            stars=repo.stars,
+            language=repo.language,
         ),
         status=scan.status.value,
         formula_version=scan.formula_version,

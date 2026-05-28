@@ -1,4 +1,5 @@
 """FormulaVersion model — registry of published formula versions."""
+
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Text

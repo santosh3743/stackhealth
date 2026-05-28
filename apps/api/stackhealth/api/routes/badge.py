@@ -3,6 +3,7 @@
 TODO (Week 4): proper SVG generation per docs/10-FRONTEND-PAGES.md.
 For now returns a stub that proves the route works.
 """
+
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
@@ -32,9 +33,15 @@ def _svg(label: str, value: str, color: str) -> str:
 
 
 GRADE_COLOR = {
-    "A+": "#10b981", "A": "#10b981", "A-": "#22c55e",
-    "B+": "#22c55e", "B": "#84cc16", "B-": "#84cc16",
-    "C+": "#f59e0b", "C": "#f59e0b", "C-": "#f59e0b",
+    "A+": "#10b981",
+    "A": "#10b981",
+    "A-": "#22c55e",
+    "B+": "#22c55e",
+    "B": "#84cc16",
+    "B-": "#84cc16",
+    "C+": "#f59e0b",
+    "C": "#f59e0b",
+    "C-": "#f59e0b",
     "D": "#ef4444",
     "F": "#be123c",
 }

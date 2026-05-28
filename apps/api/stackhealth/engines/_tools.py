@@ -1,4 +1,5 @@
 """Shared helpers for engines that shell out to binaries."""
+
 import logging
 import shutil
 import subprocess

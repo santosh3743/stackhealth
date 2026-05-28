@@ -1,4 +1,5 @@
 """Smoke test the FastAPI app boots and serves health."""
+
 from fastapi.testclient import TestClient
 
 from stackhealth.api.main import app

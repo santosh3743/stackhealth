@@ -1,4 +1,5 @@
 """Copy-paste duplication via `jscpd`. Reference: docs/03 §2c."""
+
 import json
 import logging
 import shutil
@@ -33,10 +34,13 @@ def run(workdir: Path, timeout: int = 180) -> DuplicationResult:
         proc = run_capture(
             cmd_prefix
             + [
-                "--mode", "mild",
+                "--mode",
+                "mild",
                 "--silent",
-                "--reporters", "json",
-                "--output", outdir,
+                "--reporters",
+                "json",
+                "--output",
+                outdir,
                 str(workdir),
             ],
             timeout=timeout,

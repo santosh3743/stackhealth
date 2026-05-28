@@ -6,6 +6,7 @@
 
 If you change one, change all three.
 """
+
 from stackhealth.formula.v1 import (
     FORMULA_VERSION,
     LetterGrade,

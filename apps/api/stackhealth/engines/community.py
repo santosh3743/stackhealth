@@ -2,6 +2,7 @@
 
 Reference: docs/03 §4. All GitHub REST calls go through `_gh`.
 """
+
 import logging
 import math
 import statistics
@@ -109,9 +110,7 @@ def collect(owner: str, name: str, *, stars: int, pushed_at: datetime | None) ->
                 comments = cr.json()
                 if not comments:
                     continue
-                first = datetime.fromisoformat(
-                    comments[0]["created_at"].replace("Z", "+00:00")
-                )
+                first = datetime.fromisoformat(comments[0]["created_at"].replace("Z", "+00:00"))
                 response_hours.append((first - created).total_seconds() / 3600.0)
             if response_hours:
                 sig.median_first_response_hours = statistics.median(response_hours)

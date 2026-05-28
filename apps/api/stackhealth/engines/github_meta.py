@@ -3,6 +3,7 @@
 Used both at scan submission (to verify the repo is public) and during the
 scan (to populate stars, language, license, contributor count, etc.).
 """
+
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -65,7 +66,8 @@ def fetch_repo(owner: str, name: str) -> RepoMeta:
         is_fork=data["fork"],
         is_private=data["private"],
         pushed_at=datetime.fromisoformat(data["pushed_at"].replace("Z", "+00:00"))
-        if data.get("pushed_at") else None,
+        if data.get("pushed_at")
+        else None,
         topics=tuple(data.get("topics") or ()),
         clone_url=data.get("clone_url") or f"https://github.com/{owner}/{name}.git",
     )

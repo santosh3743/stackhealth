@@ -2,6 +2,7 @@
 
 Reference: docs/03-SCORING-METHODOLOGY.md §3 (Hygiene score).
 """
+
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -9,9 +10,23 @@ import yaml
 
 # OSI-approved SPDX list (subset; expand as needed).
 OSI_APPROVED = {
-    "MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "GPL-2.0-only", "GPL-2.0-or-later",
-    "GPL-3.0-only", "GPL-3.0-or-later", "LGPL-2.1-only", "LGPL-3.0-only", "MPL-2.0",
-    "ISC", "Unlicense", "CC0-1.0", "AGPL-3.0-only", "EPL-2.0", "BSL-1.0",
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "GPL-2.0-only",
+    "GPL-2.0-or-later",
+    "GPL-3.0-only",
+    "GPL-3.0-or-later",
+    "LGPL-2.1-only",
+    "LGPL-3.0-only",
+    "MPL-2.0",
+    "ISC",
+    "Unlicense",
+    "CC0-1.0",
+    "AGPL-3.0-only",
+    "EPL-2.0",
+    "BSL-1.0",
 }
 
 
@@ -86,6 +101,8 @@ def evaluate(
     b["gitignore"] = 3 if _has_file(workdir, ".gitignore") else 0
     b["description"] = 5 if has_description else 0
     b["topics"] = 5 if has_topics else 0
-    b["recent_commit"] = 7 if (days_since_last_commit is not None and days_since_last_commit < 365) else 0
+    b["recent_commit"] = (
+        7 if (days_since_last_commit is not None and days_since_last_commit < 365) else 0
+    )
 
     return HygieneResult(score=sum(b.values()), breakdown=b)

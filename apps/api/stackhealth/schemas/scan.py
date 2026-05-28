@@ -1,4 +1,5 @@
 """Scan request and response schemas. See docs/09-API-DESIGN.md."""
+
 import re
 import uuid
 from datetime import datetime
@@ -6,7 +7,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-GITHUB_URL_RE = re.compile(r"^https?://github\.com/([\w.-]+)/([\w.-]+?)(?:\.git)?/?$", re.IGNORECASE)
+GITHUB_URL_RE = re.compile(
+    r"^https?://github\.com/([\w.-]+)/([\w.-]+?)(?:\.git)?/?$", re.IGNORECASE
+)
 
 
 class ScanCreate(BaseModel):

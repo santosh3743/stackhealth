@@ -3,6 +3,7 @@
 Each language linter is independent — if its binary is missing or the language
 isn't present, it contributes 0 issues and is omitted from `by_language`.
 """
+
 import json
 import logging
 import shutil
@@ -40,8 +41,14 @@ def _eslint(workdir: Path) -> int:
     # Only run if the project actually has an eslint config; otherwise eslint
     # fails noisily on every JS file. Heuristic: look for any of the standard configs.
     candidates = [
-        ".eslintrc", ".eslintrc.json", ".eslintrc.js", ".eslintrc.cjs",
-        ".eslintrc.yaml", ".eslintrc.yml", "eslint.config.js", "eslint.config.mjs",
+        ".eslintrc",
+        ".eslintrc.json",
+        ".eslintrc.js",
+        ".eslintrc.cjs",
+        ".eslintrc.yaml",
+        ".eslintrc.yml",
+        "eslint.config.js",
+        "eslint.config.mjs",
     ]
     if not any((workdir / c).exists() for c in candidates):
         return -1
@@ -97,7 +104,7 @@ def run(workdir: Path, languages: list[str]) -> LintResult:
         seen_runners.add(runner)
         try:
             n = runner(workdir)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             log.warning("lint runner for %s failed: %s", lang, e)
             continue
         if n < 0:

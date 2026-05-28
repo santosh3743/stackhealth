@@ -1,4 +1,5 @@
 """Cyclomatic complexity via `lizard` (multi-language). Reference: docs/03 §2a."""
+
 import csv
 import io
 import logging
