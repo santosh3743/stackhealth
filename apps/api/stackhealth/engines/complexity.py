@@ -19,7 +19,7 @@ class ComplexityResult:
     raw: dict = field(default_factory=dict)
 
 
-def run(workdir: Path, timeout: int = 90) -> ComplexityResult:
+def run(workdir: Path, timeout: int = 240) -> ComplexityResult:
     require("lizard")
     proc = run_capture(
         ["lizard", "--csv", "--working_threads", "4", str(workdir)],

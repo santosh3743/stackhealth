@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { UrlInput } from "@/components/url-input";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// See report page for why we prefer INTERNAL_API_URL on the server.
+const API_BASE =
+  process.env.INTERNAL_API_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://localhost:8000";
 
 async function fetchLatest(owner: string, name: string) {
   try {

@@ -24,29 +24,41 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 WORKDIR /app
 
-# Dependency caching layer
-COPY apps/api/pyproject.toml /app/
-RUN uv pip install --system -e .[dev] || true
-
-# App source
+# Copy the whole API source (pyproject + package), then install. We could
+# split deps from source for better cache, but uv is fast enough on rebuild
+# that the simplicity wins. NO `|| true` — a failed install must fail the
+# build, otherwise the runtime container errors with "uvicorn not found".
 COPY apps/api /app
+RUN uv pip install --system -e .
 
 # ---------- worker-specific tools ----------
 # These are heavy; only installed in the worker image variant.
 # When building the API image, you can override with --target api-base to skip them.
 FROM base AS worker-base
 
-# Semgrep (Python)
-RUN pip install --no-cache-dir semgrep==1.96.0
+# Semgrep (Python) — its opentelemetry instrumentation imports pkg_resources.
+# Python 3.12 dropped pkg_resources from stdlib AND setuptools 81+ dropped it
+# from setuptools too. Pin to <81 to keep the import path alive.
+RUN pip install --no-cache-dir "setuptools<81" semgrep==1.96.0
 
-# Trivy
-RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-    | sh -s -- -b /usr/local/bin v0.57.1
+# Trivy (binary, arch-aware)
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+      amd64) tv_arch="64bit" ;; \
+      arm64) tv_arch="ARM64" ;; \
+      *) echo "unsupported arch: $arch" && exit 1 ;; \
+    esac; \
+    curl -sSfL "https://github.com/aquasecurity/trivy/releases/download/v0.70.0/trivy_0.70.0_Linux-${tv_arch}.tar.gz" \
+      | tar -xz -C /usr/local/bin trivy
 
-# cloc + radon + lizard + jscpd
-RUN apt-get update && apt-get install -y --no-install-recommends cloc \
+# cloc + radon + lizard, plus Node + jscpd for duplication detection.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cloc nodejs npm \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir radon==6.0.1 lizard==1.17.13
+    && pip install --no-cache-dir radon==6.0.1 lizard==1.17.13 \
+    && npm install -g --no-audit --no-fund jscpd@4.0.5 \
+    && npm cache clean --force
 
 # OpenSSF Scorecard binary (arch-aware: amd64 / arm64)
 RUN set -eux; \
@@ -56,7 +68,7 @@ RUN set -eux; \
       arm64) sc_arch="arm64" ;; \
       *) echo "unsupported arch: $arch" && exit 1 ;; \
     esac; \
-    curl -sSfL "https://github.com/ossf/scorecard/releases/download/v5.0.0/scorecard_5.0.0_linux_${sc_arch}.tar.gz" \
+    curl -sSfL "https://github.com/ossf/scorecard/releases/download/v5.5.0/scorecard_5.5.0_linux_${sc_arch}.tar.gz" \
       | tar -xz -C /usr/local/bin scorecard
 
 # ---------- final API stage (no scanners) ----------
