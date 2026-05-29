@@ -2,14 +2,14 @@
 # Build from the repo root: `docker build -f infra/Dockerfile.web -t stackhealth-web .`
 
 FROM node:26-alpine AS deps
-RUN corepack enable
+RUN npm install -g corepack@latest && corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
 RUN pnpm install --frozen-lockfile
 
 FROM node:26-alpine AS build
-RUN corepack enable
+RUN npm install -g corepack@latest && corepack enable
 WORKDIR /repo
 COPY --from=deps /repo/node_modules ./node_modules
 COPY --from=deps /repo/apps/web/node_modules ./apps/web/node_modules
