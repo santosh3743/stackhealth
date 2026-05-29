@@ -73,3 +73,6 @@ scan-tmp/
 
 # Claude Code local config
 .claude/
+
+# Claude Code project context — kept local, not shared
+CLAUDE.md
