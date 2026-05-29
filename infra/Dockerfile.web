@@ -1,14 +1,14 @@
 # Next.js production image (standalone output).
 # Build from the repo root: `docker build -f infra/Dockerfile.web -t stackhealth-web .`
 
-FROM node:20-alpine AS deps
+FROM node:26-alpine AS deps
 RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
 RUN pnpm install --frozen-lockfile
 
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY --from=deps /repo/node_modules ./node_modules
@@ -22,7 +22,7 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
 RUN pnpm --filter web build
 
 # Final runtime image — only ships what Next's standalone output needs.
-FROM node:20-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \

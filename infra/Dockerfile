@@ -3,7 +3,7 @@
 # adds scanner binaries (semgrep, trivy, scorecard, cloc, lizard).
 # See infra/docker-compose.prod.yml for how the two stages are wired up.
 
-FROM python:3.12-slim AS base
+FROM python:3.14-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
