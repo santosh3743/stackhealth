@@ -48,7 +48,9 @@ class Settings(BaseSettings):
     # --- Formula + scan limits ---
     formula_version: str = "v1.0"
     scan_wall_clock_timeout_seconds: int = 300
-    clone_timeout_seconds: int = 30
+    # Clone bound. 120s handles the long tail (Rust monorepos, large
+    # mirrors). Network throughput dominates here, not local CPU.
+    clone_timeout_seconds: int = 120
     clone_size_limit_mb: int = 500
     rate_limit_scans_per_ip_per_hour: int = 5
 
