@@ -1,5 +1,7 @@
 # Single image that powers both the API and the worker.
-# Different CMD per Fly app (see fly.api.toml / fly.worker.toml).
+# The two stages (`api` and `worker`) share a Python base; the worker stage
+# adds scanner binaries (semgrep, trivy, scorecard, cloc, lizard).
+# See infra/docker-compose.prod.yml for how the two stages are wired up.
 
 FROM python:3.12-slim AS base
 
@@ -46,9 +48,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends cloc \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir radon==6.0.1 lizard==1.17.13
 
-# OpenSSF Scorecard binary
-RUN curl -sSfL https://github.com/ossf/scorecard/releases/download/v5.0.0/scorecard_5.0.0_linux_amd64.tar.gz \
-    | tar -xz -C /usr/local/bin scorecard
+# OpenSSF Scorecard binary (arch-aware: amd64 / arm64)
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+      amd64) sc_arch="amd64" ;; \
+      arm64) sc_arch="arm64" ;; \
+      *) echo "unsupported arch: $arch" && exit 1 ;; \
+    esac; \
+    curl -sSfL "https://github.com/ossf/scorecard/releases/download/v5.0.0/scorecard_5.0.0_linux_${sc_arch}.tar.gz" \
+      | tar -xz -C /usr/local/bin scorecard
 
 # ---------- final API stage (no scanners) ----------
 FROM base AS api

@@ -35,7 +35,7 @@ StackHealth/
 │   └── api/                 ← FastAPI + RQ worker (shared codebase)
 ├── packages/
 │   └── formula-spec/        ← published spec for `stackhealth-dev/formula`
-├── infra/                   ← Dockerfile + fly.toml configs
+├── infra/                   ← Dockerfile + docker-compose.prod.yml + Caddyfile
 ├── scripts/                 ← setup.sh and dev helpers
 └── .github/workflows/       ← CI
 ```

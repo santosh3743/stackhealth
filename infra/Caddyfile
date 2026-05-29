@@ -1,0 +1,19 @@
+# Caddy auto-fetches Let's Encrypt certs for both names.
+# Set DOMAIN and ACME_EMAIL via .env (passed in by compose).
+
+{
+    email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+    encode gzip zstd
+    reverse_proxy web:3000
+}
+
+api.{$DOMAIN} {
+    encode gzip zstd
+    reverse_proxy api:8080
+    # OpenAPI docs and badges should cache aggressively at the edge.
+    @badge path /r/*/badge.svg
+    header @badge Cache-Control "public, max-age=3600"
+}

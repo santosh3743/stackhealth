@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Standalone output produces a self-contained server bundle for Docker.
+  output: "standalone",
   experimental: {
     typedRoutes: true,
   },
