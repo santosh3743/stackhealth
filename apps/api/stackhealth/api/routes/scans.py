@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from stackhealth.api.deps import get_client_ip, get_db
 from stackhealth.config import settings
 from stackhealth.engines.github_meta import GitHubError, fetch_repo
-from stackhealth.models import Repo, Scan, ScanFinding
+from stackhealth.models import Repo, Scan, ScanFinding, ScanSubscriber
 from stackhealth.models.scan import ScanStatus
 from stackhealth.ratelimit import allow
 from stackhealth.schemas import ScanCreate, ScanCreateResponse, ScanRead
@@ -39,6 +39,20 @@ def _err(code: str, message: str, http: int) -> HTTPException:
     return HTTPException(status_code=http, detail={"error": {"code": code, "message": message}})
 
 
+def _add_subscriber(db: Session, scan_id: uuid.UUID, email: str) -> None:
+    """Idempotently subscribe `email` to `scan_id`. Duplicates are no-ops
+    thanks to the (scan_id, email) composite primary key.
+    """
+    existing = db.scalar(
+        select(ScanSubscriber).where(
+            ScanSubscriber.scan_id == scan_id,
+            ScanSubscriber.email == email,
+        )
+    )
+    if existing is None:
+        db.add(ScanSubscriber(scan_id=scan_id, email=email))
+
+
 @router.post(
     "",
     response_model=ScanCreateResponse,
@@ -50,6 +64,7 @@ def create_scan(
     db: Session = Depends(get_db),
 ) -> ScanCreateResponse:
     owner, name = payload.owner_and_name
+    submitted_email = str(payload.notify_email)
     ip = get_client_ip(request)
 
     # 1. Rate limit by IP.
@@ -60,7 +75,20 @@ def create_scan(
     ):
         raise _err("rate_limited", "Rate limit exceeded. Try again later.", 429)
 
-    # 2. Per-repo global lock: at most one scan per repo per hour.
+    # 2. Per-repo dedupe (at most one scan per repo per hour).
+    #
+    # Three cases when an existing recent scan is found:
+    #   • In progress (queued/cloning/analyzing/scoring):
+    #       Add the submitter as another subscriber; return the existing
+    #       scan_id. The worker emails everyone on completion.
+    #   • Complete:
+    #       The user is about to be redirected to the report. They
+    #       don't need an email about something they're already
+    #       looking at, so we DON'T add a subscription. Return the
+    #       scan_id; the polling page hops them to the report.
+    #   • Failed:
+    #       Treat as if no scan exists — fall through to creating a
+    #       fresh one.
     repo = db.scalar(select(Repo).where(Repo.owner == owner, Repo.name == name))
     if repo is not None:
         recent = db.scalar(
@@ -73,6 +101,9 @@ def create_scan(
             .limit(1)
         )
         if recent is not None and recent.status != ScanStatus.failed:
+            if recent.status != ScanStatus.complete:
+                _add_subscriber(db, recent.id, submitted_email)
+                db.commit()
             return ScanCreateResponse(
                 scan_id=recent.id,
                 status=recent.status.value,
@@ -110,15 +141,17 @@ def create_scan(
     repo.updated_at = datetime.now(UTC)
     db.flush()
 
-    # 5. Create scan row.
+    # 5. Create scan row + first subscriber.
     scan = Scan(
         repo_id=repo.id,
         status=ScanStatus.queued,
         formula_version=settings.formula_version,
         requested_by_ip=ip,
-        notify_email=str(payload.notify_email) if payload.notify_email else None,
+        notify_email=submitted_email,  # deprecated; kept for back-compat
     )
     db.add(scan)
+    db.flush()  # populate scan.id without commit
+    _add_subscriber(db, scan.id, submitted_email)
     db.commit()
     db.refresh(scan)
 

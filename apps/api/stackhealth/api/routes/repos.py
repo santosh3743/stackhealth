@@ -50,6 +50,31 @@ def get_repo(owner: str, name: str, db: Session = Depends(get_db)) -> dict:
     }
 
 
+@router.get("/{owner}/{name}/recent")
+def get_recent_scan(owner: str, name: str, db: Session = Depends(get_db)) -> dict:
+    """Most recent scan of any status (queued / running / complete / failed).
+
+    Lets the frontend's not-yet-scanned page distinguish "we're already
+    scanning, want to subscribe?" from "let's start a new scan".
+    """
+    repo = db.scalar(select(Repo).where(Repo.owner == owner, Repo.name == name))
+    if repo is None:
+        raise HTTPException(status_code=404, detail="repo not yet seen")
+    scan = db.scalar(
+        select(Scan).where(Scan.repo_id == repo.id).order_by(desc(Scan.created_at)).limit(1)
+    )
+    if scan is None:
+        raise HTTPException(status_code=404, detail="no scans yet")
+    return {
+        "id": str(scan.id),
+        "status": scan.status.value,
+        "grade": scan.grade.value if scan.grade else None,
+        "overall_score": scan.overall_score,
+        "created_at": scan.created_at,
+        "completed_at": scan.completed_at,
+    }
+
+
 @router.get("/{owner}/{name}/latest")
 def get_latest_scan(owner: str, name: str, db: Session = Depends(get_db)) -> dict:
     repo = db.scalar(select(Repo).where(Repo.owner == owner, Repo.name == name))

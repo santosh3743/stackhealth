@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 
 from stackhealth.database import SessionLocal
-from stackhealth.models import Repo, Scan, ScanFinding
+from stackhealth.models import Repo, Scan, ScanFinding, ScanSubscriber
 from stackhealth.models.finding import FindingEngine, FindingSeverity
 from stackhealth.models.scan import LetterGrade as ScanLetterGrade
 from stackhealth.models.scan import ScanStatus
@@ -122,38 +122,62 @@ def run_scan(scan_id: str | uuid.UUID) -> None:
                     line_number=f.line_number,
                 )
             )
-        notify_email = s.notify_email
         db.commit()
 
     log.info("scan %s complete: %s (%s)", scan_uuid, result.overall, result.grade.value)
 
-    # Best-effort completion email. Never fail the job because of email problems.
-    if notify_email:
-        try:
-            scores = {
-                "security": result.security,
-                "quality": result.quality,
-                "hygiene": result.hygiene,
-                "community": result.community,
-            }
-            # Snapshot repo meta for the email — best-effort, separate session.
-            language = stars = None
-            with SessionLocal() as db:
-                r = db.scalar(select(Repo).where(Repo.owner == owner, Repo.name == name))
-                if r is not None:
-                    language = r.language
-                    stars = r.stars
-            send_scan_complete(
-                to_email=notify_email,
-                owner=owner,
-                name=name,
-                scan_id=str(scan_uuid),
-                overall=result.overall,
-                grade=result.grade.value,
-                partial=result.partial,
-                scores=scores,
-                language=language,
-                stars=stars,
-            )
-        except Exception:
-            log.exception("notify failed for scan %s", scan_uuid)
+    # Best-effort completion email for every subscriber. Worker retries
+    # are safe because we only send to subscribers with notified_at IS
+    # NULL, then mark them. A subscriber added AFTER completion (which
+    # we don't currently support, but might in the future) would get
+    # picked up on the next pass.
+    scores = {
+        "security": result.security,
+        "quality": result.quality,
+        "hygiene": result.hygiene,
+        "community": result.community,
+    }
+    # Snapshot repo meta once for everyone in this batch.
+    language = stars = None
+    with SessionLocal() as db:
+        r = db.scalar(select(Repo).where(Repo.owner == owner, Repo.name == name))
+        if r is not None:
+            language = r.language
+            stars = r.stars
+
+    with SessionLocal() as db:
+        pending = list(
+            db.scalars(
+                select(ScanSubscriber).where(
+                    ScanSubscriber.scan_id == scan_uuid,
+                    ScanSubscriber.notified_at.is_(None),
+                )
+            ).all()
+        )
+
+        for sub in pending:
+            try:
+                send_scan_complete(
+                    to_email=sub.email,
+                    owner=owner,
+                    name=name,
+                    scan_id=str(scan_uuid),
+                    overall=result.overall,
+                    grade=result.grade.value,
+                    partial=result.partial,
+                    scores=scores,
+                    language=language,
+                    stars=stars,
+                )
+                sub.notified_at = datetime.now(UTC)
+            except Exception:
+                log.exception("notify failed for scan %s subscriber %s", scan_uuid, sub.email)
+                # Leave notified_at NULL so a retry picks it up later.
+
+        db.commit()
+        log.info(
+            "scan %s notified %d/%d subscribers",
+            scan_uuid,
+            sum(1 for s in pending if s.notified_at is not None),
+            len(pending),
+        )
