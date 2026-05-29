@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoMark } from "@/components/logo-mark";
 
 export const metadata = {
   title: "Methodology",
@@ -10,8 +11,14 @@ export default function MethodologyPage() {
   return (
     <main className="min-h-screen px-6 py-16 max-w-3xl mx-auto">
       <nav className="text-sm mb-10">
-        <Link href="/" className="font-semibold tracking-tight">
-          Stack<span className="text-indigo-600">Health</span>
+        <Link
+          href="/"
+          className="font-semibold tracking-tight inline-flex items-center gap-2"
+        >
+          <LogoMark size={20} />
+          <span>
+            Stack<span className="text-indigo-600">Health</span>
+          </span>
         </Link>
         <span className="text-zinc-400 mx-2">/</span>
         <span className="text-zinc-500">Methodology</span>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { GradeBadge, type Grade } from "@/components/grade-badge";
+import { LogoMark } from "@/components/logo-mark";
 
 const API_BASE =
   process.env.INTERNAL_API_URL ??
@@ -219,8 +220,14 @@ export default async function ScanReportPage({
   return (
     <main className="min-h-screen pb-16">
       <nav className="px-6 py-5 max-w-6xl w-full mx-auto flex justify-between text-sm">
-        <Link href="/" className="font-semibold tracking-tight">
-          Stack<span className="text-indigo-600">Health</span>
+        <Link
+          href="/"
+          className="font-semibold tracking-tight flex items-center gap-2"
+        >
+          <LogoMark size={20} />
+          <span>
+            Stack<span className="text-indigo-600">Health</span>
+          </span>
         </Link>
         <div className="flex gap-5 text-zinc-500">
           <Link href="/methodology" className="hover:text-zinc-900 dark:hover:text-white">

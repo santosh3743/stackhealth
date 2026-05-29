@@ -1,12 +1,16 @@
 import { DiscoveryPanel } from "@/components/discovery-panel";
+import { LogoMark } from "@/components/logo-mark";
 import { UrlInput } from "@/components/url-input";
 
 export default function HomePage() {
   return (
     <main className="min-h-screen flex flex-col">
       <header className="px-6 py-5 flex justify-between items-center max-w-7xl w-full mx-auto">
-        <div className="font-semibold tracking-tight">
-          Stack<span className="text-indigo-600">Health</span>
+        <div className="font-semibold tracking-tight flex items-center gap-2">
+          <LogoMark size={22} />
+          <span>
+            Stack<span className="text-indigo-600">Health</span>
+          </span>
         </div>
         <nav className="flex gap-6 text-sm text-zinc-600 dark:text-zinc-300">
           <a href="/methodology" className="hover:text-zinc-900 dark:hover:text-white">
