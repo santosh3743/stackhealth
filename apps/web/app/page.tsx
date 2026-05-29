@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { DiscoveryPanel } from "@/components/discovery-panel";
 import { LogoMark } from "@/components/logo-mark";
 import { UrlInput } from "@/components/url-input";
@@ -13,12 +15,18 @@ export default function HomePage() {
           </span>
         </div>
         <nav className="flex gap-6 text-sm text-zinc-600 dark:text-zinc-300">
-          <a href="/methodology" className="hover:text-zinc-900 dark:hover:text-white">
+          <Link
+            href="/methodology"
+            className="hover:text-zinc-900 dark:hover:text-white"
+          >
             Methodology
-          </a>
-          <a href="/about" className="hover:text-zinc-900 dark:hover:text-white">
+          </Link>
+          <Link
+            href="/about"
+            className="hover:text-zinc-900 dark:hover:text-white"
+          >
             About
-          </a>
+          </Link>
           <a
             href="https://github.com/santosh3743/stackhealth"
             className="hover:text-zinc-900 dark:hover:text-white"
@@ -44,6 +52,15 @@ export default function HomePage() {
 
             <UrlInput />
 
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 lg:max-w-xl mx-auto lg:mx-0">
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                Pro tip:
+              </span>{" "}
+              replace <code className="font-mono">github.com</code> with{" "}
+              <code className="font-mono text-indigo-600">stackhealth.dev</code>{" "}
+              in any repo URL to jump straight to its report.
+            </p>
+
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Formula v1.0 · Free for every public repo · Open source
             </p>
@@ -66,12 +83,12 @@ export default function HomePage() {
             <p className="mt-3 px-2 text-[11px] text-zinc-500 dark:text-zinc-500 leading-relaxed">
               Every scan is public. Submitting a URL adds the repo to this
               feed.{" "}
-              <a
+              <Link
                 href="/methodology"
                 className="underline hover:text-indigo-600"
               >
                 Why?
-              </a>
+              </Link>
             </p>
           </div>
         </div>
@@ -80,9 +97,12 @@ export default function HomePage() {
       <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8 px-6 text-sm text-zinc-500">
         <div className="max-w-7xl mx-auto flex justify-between">
           <span>StackHealth · open source · MIT</span>
-          <a href="/methodology" className="hover:text-zinc-900 dark:hover:text-white">
+          <Link
+            href="/methodology"
+            className="hover:text-zinc-900 dark:hover:text-white"
+          >
             How is this scored?
-          </a>
+          </Link>
         </div>
       </footer>
     </main>
