@@ -38,7 +38,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    # PATCH is needed for /api/scans/:id/notify (email opt-in mid-scan).
+    # DELETE is added prophylactically for future endpoints.
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

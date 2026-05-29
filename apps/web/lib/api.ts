@@ -41,10 +41,19 @@ export interface Scan {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    });
+  } catch {
+    // fetch only throws for network-level failures (DNS, offline, CORS
+    // preflight blocked, etc.). HTTP errors fall through to !res.ok below.
+    throw new Error(
+      "Couldn't reach StackHealth. Check your internet — if the problem persists, it's on us.",
+    );
+  }
   if (!res.ok) {
     let detail = res.statusText;
     try {
