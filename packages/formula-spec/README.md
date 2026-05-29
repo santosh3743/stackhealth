@@ -2,7 +2,7 @@
 
 > The frozen, published versions of the StackHealth scoring formula.
 >
-> This directory is mirrored to the public repo `stackhealth-dev/formula` and tagged at each release. The README/Vision principle of an **open formula** means this is the canonical machine-readable record. Anyone can fork, recompute, or propose changes via PR.
+> This directory is mirrored to the public repo `santosh3743/stackhealth/tree/main/packages/formula-spec` and tagged at each release. The README/Vision principle of an **open formula** means this is the canonical machine-readable record. Anyone can fork, recompute, or propose changes via PR.
 
 ## Files
 

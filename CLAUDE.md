@@ -34,7 +34,7 @@ StackHealth/
 │   ├── web/                 ← Next.js 15 frontend
 │   └── api/                 ← FastAPI + RQ worker (shared codebase)
 ├── packages/
-│   └── formula-spec/        ← published spec for `stackhealth-dev/formula`
+│   └── formula-spec/        ← the open formula spec (machine-readable)
 ├── infra/                   ← Dockerfile + docker-compose.prod.yml + Caddyfile
 ├── scripts/                 ← setup.sh and dev helpers
 └── .github/workflows/       ← CI

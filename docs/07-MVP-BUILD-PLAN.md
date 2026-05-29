@@ -14,7 +14,7 @@ Every task should be commit-able in one sitting (1–2 hours). If a task feels b
 - [ ] `pnpm create next-app apps/web --typescript --tailwind --app`
 - [ ] `uv init apps/api`, add FastAPI + SQLAlchemy + Alembic + Pydantic to `pyproject.toml`
 - [ ] Create `infra/Dockerfile`, `infra/fly.api.toml`, `infra/fly.worker.toml`
-- [ ] Push to `stackhealth-dev/stackhealth` GitHub repo
+- [ ] Push to `santosh3743/stackhealth` GitHub repo
 - [ ] Buy + DNS the `stackhealth.dev` domain
 
 ### Tue evening — Deploy hello world (2h)
@@ -151,7 +151,7 @@ Every task should be commit-able in one sitting (1–2 hours). If a task feels b
 ### Tue evening — Methodology page (2h)
 - [ ] `/methodology` renders `03-SCORING-METHODOLOGY.md` (use `next-mdx-remote`)
 - [ ] Side-anchor nav for sections
-- [ ] Link to `stackhealth-dev/formula` repo
+- [ ] Link to `santosh3743/stackhealth/tree/main/packages/formula-spec` repo
 
 ### Wed evening — Share modal (2h)
 - [ ] Share button on report page

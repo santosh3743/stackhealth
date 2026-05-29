@@ -45,7 +45,7 @@ The four channels, in order of priority:
 - Post at **8:00 AM Pacific** on a **Tuesday or Wednesday** (highest engagement window)
 - Title format: `Show HN: StackHealth – open-formula code health score for any GitHub repo`
 - Description: 2 short paragraphs. What it is, why it's different (open formula).
-- First comment from you: "Author here. Happy to answer questions. The formula is documented at stackhealth.dev/methodology and lives in github.com/stackhealth-dev/formula. Roast away."
+- First comment from you: "Author here. Happy to answer questions. The formula is documented at stackhealth.dev/methodology and lives in github.com/santosh3743/stackhealth/tree/main/packages/formula-spec. Roast away."
 - Stay on HN for 12 hours straight responding to every comment.
 
 ### 2. Product Hunt

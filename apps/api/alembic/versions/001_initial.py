@@ -206,7 +206,7 @@ def upgrade() -> None:
     op.execute(
         "INSERT INTO formula_versions (version, published_at, spec_url, summary, is_active) "
         "VALUES ('v1.0', NOW(), "
-        "'https://github.com/stackhealth-dev/formula/tree/v1.0', "
+        "'https://github.com/santosh3743/stackhealth/tree/main/packages/formula-spec/tree/v1.0', "
         "'Initial formula. Security 30, Quality 25, Hygiene 25, Community 20.', "
         "true)"
     )

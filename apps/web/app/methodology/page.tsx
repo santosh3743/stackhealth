@@ -24,9 +24,9 @@ export default function MethodologyPage() {
           and threshold is defined below. The same formula lives in code at{" "}
           <a
             className="underline"
-            href="https://github.com/stackhealth-dev/formula"
+            href="https://github.com/santosh3743/stackhealth/tree/main/packages/formula-spec"
           >
-            stackhealth-dev/formula
+            the formula spec
           </a>{" "}
           and runs locally in our worker.
         </p>

@@ -8,18 +8,12 @@ Format: `[ ] description (estimated hours)`. Move done items into the "Done" sec
 
 ## This week (Week 0 — Foundations)
 
-- [ ] Buy `stackhealth.dev` from Namecheap or Porkbun (15 min)
-- [ ] Create GitHub org `stackhealth-dev` (5 min)
-- [ ] Create three repos: `stackhealth`, `formula`, `docs` — all empty (10 min)
-- [ ] Push this folder to `stackhealth-dev/docs` after redacting anything personal (15 min)
-- [ ] Sign up for Vercel, Fly.io, Neon, Upstash, Cloudflare account, Sentry, Plausible (30 min)
-- [ ] Provision: Neon project, Upstash Redis, Cloudflare R2 bucket (20 min)
-- [ ] Sketch a logo (paper or Figma free tier) — even a basic wordmark works (1 hour)
-- [ ] Pick a primary brand color (currently planned: Indigo 600 `#4f46e5`) (15 min)
-- [ ] Create a GitHub Project board with all Week 1–4 issues from `07-MVP-BUILD-PLAN.md` (45 min)
-- [ ] Tweet/post: "Starting a side project — StackHealth, an open code health benchmark. Updates weekly." Start the build-in-public loop. (10 min)
-
-**Week 0 total estimate: ~4–5 hours**
+- [x] Bought `stackhealth.dev` ($12.20/yr) ✅
+- [x] Repo at `github.com/santosh3743/stackhealth` (single-repo strategy) ✅
+- [ ] Provision the Oracle Cloud Always Free ARM VM and point DNS at it
+- [ ] First deploy via `./infra/deploy.sh` and verify Let's Encrypt cert issues
+- [ ] Sketch a logo (paper or Figma free tier) — even a basic wordmark works
+- [ ] Tweet/post: "Starting a side project — StackHealth, an open code health benchmark. Updates weekly." Start the build-in-public loop.
 
 ---
 
@@ -107,5 +101,5 @@ See `07-MVP-BUILD-PLAN.md` for the day-by-day breakdown. Top-level:
 ## Notes / scratch
 
 - Domain availability check: do `stackhealth.dev`, `.io`, `.org` first. Settle for `getstackhealth.dev` only as a last resort.
-- The formula repo (`stackhealth-dev/formula`) should be public from day 1, even if empty. It's the credibility anchor.
+- The formula spec at `packages/formula-spec/` is the credibility anchor — keep it readable and obvious.
 - Don't skip the Methodology page — it IS the marketing.

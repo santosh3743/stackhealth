@@ -11,8 +11,8 @@ This is a **solo, evenings-and-weekends** roadmap. Effort estimates assume ~10 f
 The week before code is written.
 
 - [ ] Buy `stackhealth.dev` domain (Namecheap or Porkbun)
-- [ ] Register GitHub org `stackhealth-dev` (free)
-- [ ] Create three repos: `stackhealth-dev/stackhealth` (app), `stackhealth-dev/formula` (spec), `stackhealth-dev/docs` (this folder, made public when ready)
+- [ ] Register GitHub org `santosh3743` (free)
+- [ ] Create three repos: `santosh3743/stackhealth` (app), `santosh3743/stackhealth/tree/main/packages/formula-spec` (spec), `santosh3743/stackhealth/tree/main/docs` (this folder, made public when ready)
 - [ ] Sign up: Vercel, Fly.io, Neon, Upstash, Cloudflare R2, Sentry, Plausible
 - [ ] Provision: Neon project + branch, Upstash Redis, R2 bucket
 - [ ] Create a Linear or GitHub Projects board with the Phase 1 issues from `07-MVP-BUILD-PLAN.md`
@@ -44,7 +44,7 @@ Badge SVG, share modal, methodology page, sample reports, beta launch.
 
 **Phase 1 success metrics (4 weeks post-launch):**
 - 100 unique repos scanned
-- 50 GitHub stars on the `stackhealth-dev/stackhealth` repo
+- 50 GitHub stars on the `santosh3743/stackhealth` repo
 - 1 mention on Hacker News, dev.to, or X with >100 likes/upvotes
 
 ---

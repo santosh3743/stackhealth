@@ -50,8 +50,8 @@ At your DNS provider, create two A records:
 
 | Name | Type | Value |
 |------|------|-------|
-| `stackhealth.example.com` (your apex) | A | `<vm-ip>` |
-| `api.stackhealth.example.com` | A | `<vm-ip>` |
+| `stackhealth.dev` (your apex) | A | `<vm-ip>` |
+| `api.stackhealth.dev` | A | `<vm-ip>` |
 
 Let propagation finish (usually under a minute). Verify with `dig` or
 `https://dnschecker.org`.
@@ -110,10 +110,10 @@ Look for `certificate obtained successfully` from Caddy on first boot.
 ## Step 6 — Verify
 
 ```bash
-curl https://api.your-domain.com/api/health
+curl https://api.stackhealth.dev/api/health
 # {"status":"ok","version":"0.0.1","formula_version":"v1.0"}
 
-open https://your-domain.com   # or visit in browser
+open https://stackhealth.dev   # or visit in browser
 ```
 
 ## Operating it

@@ -33,7 +33,7 @@ Full reasoning behind each choice: [`docs/05-TECH-STACK.md`](docs/05-TECH-STACK.
 ### One-time setup
 
 ```bash
-git clone https://github.com/stackhealth-dev/stackhealth
+git clone https://github.com/santosh3743/stackhealth
 cd stackhealth
 ./scripts/setup.sh
 ```

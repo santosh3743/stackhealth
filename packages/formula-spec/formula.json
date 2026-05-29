@@ -2,7 +2,7 @@
   "version": "v1.0",
   "published_at": "2026-05-28",
   "summary": "Initial formula. Security 30, Quality 25, Hygiene 25, Community 20.",
-  "spec_url": "https://github.com/stackhealth-dev/formula/blob/v1.0/v1.0.md",
+  "spec_url": "https://github.com/santosh3743/stackhealth/tree/main/packages/formula-spec/blob/v1.0/v1.0.md",
   "dimension_weights": {
     "security": 0.30,
     "quality": 0.25,

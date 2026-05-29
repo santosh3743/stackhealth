@@ -15,7 +15,7 @@ export default function HomePage() {
             About
           </a>
           <a
-            href="https://github.com/stackhealth-dev/stackhealth"
+            href="https://github.com/santosh3743/stackhealth"
             className="hover:text-zinc-900 dark:hover:text-white"
           >
             GitHub

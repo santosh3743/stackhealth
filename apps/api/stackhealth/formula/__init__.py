@@ -2,7 +2,7 @@
 
 `v1.py` MUST stay in sync with:
     - docs/03-SCORING-METHODOLOGY.md (human-readable spec)
-    - packages/formula-spec/v1.0.md (frozen spec, published to stackhealth-dev/formula)
+    - packages/formula-spec/v1.0.md (frozen, machine-readable mirror)
 
 If you change one, change all three.
 """
