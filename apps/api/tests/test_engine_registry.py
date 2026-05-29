@@ -65,25 +65,73 @@ def test_detect_versions_skips_unknown_engines() -> None:
     assert versions == {}
 
 
-def test_detect_versions_includes_present_binary(monkeypatch) -> None:
-    """When tool_version() returns a string, it lands in the result."""
-    monkeypatch.setattr(
-        _registry,
-        "tool_version",
-        lambda binary: "1.2.3",
-    )
-    versions = _registry.detect_versions({"semgrep"})
-    assert versions == {"semgrep": "1.2.3"}
+def _fake_run(stdout: str):
+    """A run_capture stub that returns the given stdout."""
+    import subprocess
+
+    def _stub(cmd, **kwargs):
+        return subprocess.CompletedProcess(args=cmd, returncode=0, stdout=stdout, stderr="")
+
+    return _stub
 
 
-def test_detect_versions_falls_back_to_unknown(monkeypatch) -> None:
-    """When the binary is missing tool_version() returns None — we substitute
-    the UNKNOWN constant rather than dropping the engine.
+def test_default_version_command_is_dash_dash_version(monkeypatch) -> None:
+    """An engine without a `version_command` override uses `--version`."""
+    import subprocess
+
+    captured: list[list[str]] = []
+
+    def _capture(cmd, **kwargs):
+        captured.append(cmd)
+        return subprocess.CompletedProcess(args=cmd, returncode=0, stdout="1.96.0\n", stderr="")
+
+    monkeypatch.setattr(_registry, "require", lambda _: "/usr/local/bin/semgrep")
+    monkeypatch.setattr(_registry, "run_capture", _capture)
+
+    version = _registry.get("semgrep").detect_version()
+    assert version == "1.96.0"
+    assert captured == [["semgrep", "--version"]]
+
+
+def test_scorecard_uses_subcommand_and_pattern(monkeypatch) -> None:
+    """Scorecard rejects `--version`. It uses a `version` subcommand and
+    prints the version inside ASCII art — we extract `GitVersion`.
     """
-    monkeypatch.setattr(
-        _registry,
-        "tool_version",
-        lambda binary: None,
+    scorecard_output = (
+        "         __  ____     ____    ___\n"
+        "./scorecard: OpenSSF Scorecard\n"
+        "\n"
+        "GitVersion:    v5.5.0\n"
+        "GitCommit:     deadbeef\n"
     )
-    versions = _registry.detect_versions({"semgrep"})
-    assert versions == {"semgrep": UNKNOWN_TOOL_VERSION}
+    monkeypatch.setattr(_registry, "require", lambda _: "/usr/local/bin/scorecard")
+    monkeypatch.setattr(_registry, "run_capture", _fake_run(scorecard_output))
+    assert _registry.get("scorecard").detect_version() == "v5.5.0"
+
+
+def test_trivy_extracts_semver_from_version_line(monkeypatch) -> None:
+    """Trivy prints `Version: 0.70.0` then DB info. Keep just the SemVer."""
+    monkeypatch.setattr(_registry, "require", lambda _: "/usr/local/bin/trivy")
+    monkeypatch.setattr(
+        _registry, "run_capture", _fake_run("Version: 0.70.0\nVulnerabilityDB:\n  Version: 2\n")
+    )
+    assert _registry.get("trivy").detect_version() == "0.70.0"
+
+
+def test_missing_binary_returns_unknown(monkeypatch) -> None:
+    from stackhealth.engines._tools import EngineUnavailable
+
+    def _raise(_binary):
+        raise EngineUnavailable("not on PATH")
+
+    monkeypatch.setattr(_registry, "require", _raise)
+    assert _registry.get("semgrep").detect_version() == UNKNOWN_TOOL_VERSION
+
+
+def test_pattern_no_match_returns_unknown(monkeypatch) -> None:
+    """If the binary output doesn't contain a version, return UNKNOWN
+    rather than guessing — better than silently shipping a wrong value.
+    """
+    monkeypatch.setattr(_registry, "require", lambda _: "/usr/local/bin/scorecard")
+    monkeypatch.setattr(_registry, "run_capture", _fake_run("no version anywhere here"))
+    assert _registry.get("scorecard").detect_version() == UNKNOWN_TOOL_VERSION

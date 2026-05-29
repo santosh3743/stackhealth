@@ -19,7 +19,7 @@ jobs:
         with:
           version: latest
       - name: Set up Python
-        run: uv python install 3.14
+        run: uv python install 3.13
       - name: Install dependencies
         run: uv sync --extra dev
       - name: Lint
