@@ -11,11 +11,14 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /**
  * URL submit form.
  *
- * @param initialUrl Pre-fills the input. Used when arriving from a
- *   `/r/owner/name` URL that we haven't scanned yet — the visitor
- *   shouldn't have to re-type a URL we already know.
- * @param autoFocus Focus the URL input on mount (useful when this is
- *   the page's primary CTA).
+ * Email is **required** to submit. Every scan needs a notification
+ * target so the user can walk away from the polling page — most scans
+ * take 30s to several minutes and we don't want to make people babysit
+ * a progress bar.
+ *
+ * @param initialUrl Pre-fills the repo URL. Used when arriving from
+ *   `/r/owner/name` so the visitor doesn't re-type a URL we already know.
+ * @param autoFocus Focus the URL input on mount.
  */
 export function UrlInput({
   initialUrl = "",
@@ -27,7 +30,6 @@ export function UrlInput({
   const router = useRouter();
   const [url, setUrl] = useState(initialUrl);
   const [email, setEmail] = useState("");
-  const [emailExpanded, setEmailExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,17 +44,18 @@ export function UrlInput({
       setError("Paste a github.com/owner/repo URL");
       return;
     }
-    if (trimmedEmail && !EMAIL_RE.test(trimmedEmail)) {
+    if (!trimmedEmail) {
+      setError("Email is required — we'll send the report there when it's ready");
+      return;
+    }
+    if (!EMAIL_RE.test(trimmedEmail)) {
       setError("That doesn't look like a valid email");
       return;
     }
 
     setLoading(true);
     try {
-      const { scan_id } = await submitScan(
-        trimmedUrl,
-        trimmedEmail || undefined,
-      );
+      const { scan_id } = await submitScan(trimmedUrl, trimmedEmail);
       router.push(`/scan/${scan_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -73,50 +76,31 @@ export function UrlInput({
           onChange={(e) => setUrl(e.target.value)}
           disabled={loading}
           autoFocus={autoFocus}
+          required
+          className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="your@email.com (we'll email the report here)"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
+          required
           className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
         >
-          {loading ? "Scanning…" : "Scan"}
+          {loading ? "Scanning…" : "Scan & email me"}
         </button>
       </div>
-
-      {/* Optional email — collapsed by default so the hero stays clean. */}
-      {emailExpanded ? (
-        <div className="flex flex-col sm:flex-row gap-2 items-start">
-          <input
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="you@example.com (optional — we'll email when it's done)"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            className="flex-1 px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              setEmail("");
-              setEmailExpanded(false);
-            }}
-            className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white px-2 py-2"
-          >
-            Cancel
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setEmailExpanded(true)}
-          className="text-xs text-zinc-500 hover:text-indigo-600 underline-offset-2 hover:underline"
-        >
-          + Notify me by email when it&apos;s ready
-        </button>
-      )}
 
       {error && (
         <p role="alert" className="text-sm text-red-600 dark:text-red-400">

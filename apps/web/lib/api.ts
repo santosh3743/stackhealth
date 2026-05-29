@@ -71,13 +71,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function submitScan(
   repo_url: string,
-  notify_email?: string,
+  notify_email: string,
 ): Promise<ScanSummary> {
-  const body: { repo_url: string; notify_email?: string } = { repo_url };
-  if (notify_email) body.notify_email = notify_email;
   return request<ScanSummary>("/api/scans", {
     method: "POST",
-    body: JSON.stringify(body),
+    body: JSON.stringify({ repo_url, notify_email }),
   });
 }
 

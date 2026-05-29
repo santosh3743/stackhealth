@@ -8,6 +8,10 @@ from pydantic import ValidationError
 from stackhealth.schemas import ScanCreate
 from stackhealth.schemas.scan import ScanNotifyUpdate
 
+# Every ScanCreate needs an email — these URL-parsing tests pass this
+# valid-looking dummy and assert on URL handling separately.
+_VALID_EMAIL = "test@example.com"
+
 # ─────────────────────────── repo URL parsing ───────────────────────────
 
 
@@ -24,7 +28,7 @@ from stackhealth.schemas.scan import ScanNotifyUpdate
     ],
 )
 def test_valid_github_urls(url: str) -> None:
-    payload = ScanCreate(repo_url=url)
+    payload = ScanCreate(repo_url=url, notify_email=_VALID_EMAIL)
     owner, name = payload.owner_and_name
     assert owner and name
 
@@ -43,11 +47,14 @@ def test_valid_github_urls(url: str) -> None:
 )
 def test_invalid_urls_rejected(url: str) -> None:
     with pytest.raises(ValidationError):
-        ScanCreate(repo_url=url)
+        ScanCreate(repo_url=url, notify_email=_VALID_EMAIL)
 
 
 def test_owner_and_name_extraction() -> None:
-    payload = ScanCreate(repo_url="https://github.com/Pallets/Click.git")
+    payload = ScanCreate(
+        repo_url="https://github.com/Pallets/Click.git",
+        notify_email=_VALID_EMAIL,
+    )
     owner, name = payload.owner_and_name
     assert owner == "Pallets"
     assert name == "Click"  # `.git` stripped
@@ -56,9 +63,10 @@ def test_owner_and_name_extraction() -> None:
 # ─────────────────────────── notify email ───────────────────────────
 
 
-def test_notify_email_optional_on_create() -> None:
-    payload = ScanCreate(repo_url="https://github.com/foo/bar")
-    assert payload.notify_email is None
+def test_notify_email_is_required_on_create() -> None:
+    """Email is mandatory — every scan must have a notification target."""
+    with pytest.raises(ValidationError):
+        ScanCreate(repo_url="https://github.com/foo/bar")  # type: ignore[call-arg]
 
 
 def test_notify_email_validates_format() -> None:

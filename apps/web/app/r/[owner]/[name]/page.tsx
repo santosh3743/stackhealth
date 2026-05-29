@@ -47,9 +47,9 @@ export default async function RepoLatestPage({
           {owner}/{name}
         </h1>
         <p className="text-zinc-500">
-          We haven&apos;t scanned this repo yet — hit{" "}
-          <span className="font-medium">Scan</span> to generate the first
-          report. Takes ~30–90 seconds.
+          We haven&apos;t scanned this repo yet. Drop your email and we&apos;ll
+          send the report when it&apos;s ready — usually 30 seconds, sometimes
+          a few minutes for big repos.
         </p>
         <div className="flex justify-center">
           <UrlInput initialUrl={githubUrl} autoFocus />

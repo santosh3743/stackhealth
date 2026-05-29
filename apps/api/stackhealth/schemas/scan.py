@@ -16,7 +16,10 @@ class ScanCreate(BaseModel):
     repo_url: str = Field(..., examples=["https://github.com/fastapi/fastapi"])
     # Optional. If provided, we email a one-line scan-complete notification
     # so the user can close their tab and walk away.
-    notify_email: EmailStr | None = Field(default=None)
+    # Required. Every scan needs a notification target so the user can
+    # walk away from the polling page — most scans take 30s to several
+    # minutes and we don't want to make people babysit a progress bar.
+    notify_email: EmailStr
 
     @field_validator("repo_url")
     @classmethod

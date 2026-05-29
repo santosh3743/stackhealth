@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { use } from "react";
-import { getScan, setScanNotifyEmail, type Scan } from "@/lib/api";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { getScan, type Scan } from "@/lib/api";
 
 const PHASES: Record<string, { label: string; pct: number }> = {
   queued: { label: "Queued", pct: 5 },
@@ -27,10 +25,6 @@ export default function ScanProgressPage({
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [copied, setCopied] = useState(false);
-  const [emailDraft, setEmailDraft] = useState("");
-  const [emailSaving, setEmailSaving] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [emailSaved, setEmailSaved] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,26 +70,6 @@ export default function ScanProgressPage({
       ? `${window.location.origin}/r/${scan.repo.owner}/${scan.repo.name}/${scan.id}`
       : "";
 
-  async function submitEmail(e: React.FormEvent) {
-    e.preventDefault();
-    setEmailError(null);
-    const trimmed = emailDraft.trim();
-    if (!EMAIL_RE.test(trimmed)) {
-      setEmailError("That doesn't look like a valid email");
-      return;
-    }
-    setEmailSaving(true);
-    try {
-      await setScanNotifyEmail(scanId, trimmed);
-      setEmailSaved(true);
-      setScan((s) => (s ? { ...s, notify_enabled: true } : s));
-    } catch (err) {
-      setEmailError(err instanceof Error ? err.message : "Could not save email");
-    } finally {
-      setEmailSaving(false);
-    }
-  }
-
   async function copyUrl() {
     if (!reportUrl) return;
     try {
@@ -110,6 +84,25 @@ export default function ScanProgressPage({
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
       <div className="max-w-lg w-full space-y-6">
+        {isInProgress && (
+          // Email is required at submit, so every in-progress scan has a
+          // notification target. Lead with the calmer "we'll email you"
+          // confirmation; the progress bar below is for users who choose
+          // to stay on the page anyway.
+          <div className="rounded-xl border border-emerald-300 bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-950/30 p-5 text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500 text-white text-lg font-bold">
+              ✓
+            </div>
+            <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+              All set — we&apos;ll email you when it&apos;s done.
+            </p>
+            <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
+              You can close this tab now. The scan keeps running and your
+              report will be in your inbox within a few minutes.
+            </p>
+          </div>
+        )}
+
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-semibold">
             {scan?.repo
@@ -141,16 +134,13 @@ export default function ScanProgressPage({
             </p>
           </div>
         ) : (
-          // Shareable / bookmark URL block — only while the scan is still
-          // in progress. Once it's complete, we redirect (in `poll()` above).
+          // Bookmark URL — handy as a permalink even when email is set,
+          // so the user can return to the same page from another device.
           isInProgress && reportUrl && (
             <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 space-y-2">
-              <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                You can close this tab and come back later
-              </p>
               <p className="text-xs text-zinc-500">
-                The scan continues running. Bookmark or copy this URL — your
-                report will be here when it&apos;s done.
+                Bookmark or share the report URL — it&apos;ll point to your
+                results when they&apos;re ready.
               </p>
               <div className="flex gap-2 items-stretch">
                 <input
@@ -167,48 +157,6 @@ export default function ScanProgressPage({
                   {copied ? "Copied ✓" : "Copy"}
                 </button>
               </div>
-
-              {/* Email opt-in / opt-out */}
-              <div className="pt-3 mt-1 border-t border-zinc-200 dark:border-zinc-800">
-                {scan?.notify_enabled || emailSaved ? (
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 text-white text-[9px] font-bold flex items-center justify-center">
-                      ✓
-                    </span>
-                    We&apos;ll email you when the scan finishes.
-                  </p>
-                ) : (
-                  <form onSubmit={submitEmail} className="space-y-1.5">
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                      Or get notified by email when it&apos;s ready:
-                    </p>
-                    <div className="flex gap-2 items-stretch">
-                      <input
-                        type="email"
-                        inputMode="email"
-                        autoComplete="email"
-                        placeholder="you@example.com"
-                        value={emailDraft}
-                        onChange={(e) => setEmailDraft(e.target.value)}
-                        disabled={emailSaving}
-                        className="flex-1 min-w-0 px-2 py-1.5 text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
-                      <button
-                        type="submit"
-                        disabled={emailSaving || !emailDraft}
-                        className="px-3 py-1.5 text-xs font-medium rounded border border-zinc-300 dark:border-zinc-700 hover:border-indigo-500 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                      >
-                        {emailSaving ? "Saving…" : "Notify me"}
-                      </button>
-                    </div>
-                    {emailError && (
-                      <p className="text-xs text-red-600 dark:text-red-400">
-                        {emailError}
-                      </p>
-                    )}
-                  </form>
-                )}
-              </div>
             </div>
           )
         )}
@@ -223,8 +171,8 @@ export default function ScanProgressPage({
         )}
 
         <p className="text-center text-xs text-zinc-400">
-          Scans usually take 30–90 seconds — sometimes up to 3 minutes for repos
-          we&apos;ve never seen.
+          Scans usually take 30–90 seconds — sometimes a few minutes for
+          repos we&apos;ve never seen.
         </p>
       </div>
     </main>
