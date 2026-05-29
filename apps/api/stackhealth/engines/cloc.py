@@ -29,10 +29,20 @@ def run(workdir: Path) -> ClocResult:
     )
     if not proc.stdout.strip():
         raise EngineFailed("cloc produced no output")
+    # cloc with `--by-file-by-lang` on very large or unusual repos
+    # occasionally emits a trailing warning or a second JSON object after
+    # the main report (seen on novuhq/novu — 38k file entries followed
+    # by extra text). `json.loads` rejects anything after the first
+    # document. `JSONDecoder.raw_decode` reads just the first one and
+    # tells us where it ended; we discard the tail.
     try:
-        data = json.loads(proc.stdout)
+        data, end = json.JSONDecoder().raw_decode(proc.stdout.lstrip())
     except json.JSONDecodeError as e:
         raise EngineFailed(f"cloc returned invalid JSON: {e}") from e
+    if end < len(proc.stdout.lstrip()):
+        log.warning(
+            "cloc produced trailing data after JSON (%d bytes); ignoring", len(proc.stdout) - end
+        )
 
     by_file = data.get("by_file", {})
     by_lang = data.get("by_lang", {})

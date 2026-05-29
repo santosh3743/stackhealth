@@ -29,7 +29,22 @@ export default function ScanProgressPage({
   useEffect(() => {
     let cancelled = false;
     const started = Date.now();
-    const tick = setInterval(() => setElapsed((Date.now() - started) / 1000), 250);
+    // Elapsed counter only ticks once per second now — we used 250ms before
+    // when polling was 2s, but with relaxed polling there's nothing fast
+    // enough on this page that needs sub-second precision.
+    const tick = setInterval(() => setElapsed((Date.now() - started) / 1000), 1000);
+
+    // Polling cadence with backoff. Email is mandatory, so the user has
+    // likely closed the tab — no need to hammer the API every 2 seconds.
+    //   0–30s:   poll every 5s   (fast feedback for quick scans)
+    //   30s–2m:  poll every 10s
+    //   2m+:     poll every 20s  (relax — long scans aren't an emergency)
+    function nextDelay(): number {
+      const secs = (Date.now() - started) / 1000;
+      if (secs < 30) return 5_000;
+      if (secs < 120) return 10_000;
+      return 20_000;
+    }
 
     async function poll() {
       try {
@@ -48,7 +63,7 @@ export default function ScanProgressPage({
         if (data.status === "failed") {
           return;
         }
-        setTimeout(poll, 2000);
+        setTimeout(poll, nextDelay());
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : "Polling failed");
