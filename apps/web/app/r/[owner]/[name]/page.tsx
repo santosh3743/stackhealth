@@ -34,17 +34,26 @@ export default async function RepoLatestPage({
     redirect(`/r/${owner}/${name}/${latest.id}`);
   }
 
+  // Pre-fill the URL input so the visitor doesn't have to re-type a URL
+  // we already know — they arrived here via /r/owner/name (or the
+  // github.com→stackhealth.dev URL swap), so click Scan is the only
+  // remaining step.
+  const githubUrl = `https://github.com/${owner}/${name}`;
+
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
-      <div className="max-w-lg w-full space-y-6 text-center">
+      <div className="max-w-2xl w-full space-y-6 text-center">
         <h1 className="text-2xl font-semibold">
           {owner}/{name}
         </h1>
         <p className="text-zinc-500">
-          We haven&apos;t scanned this repo yet. Submit it to generate the first
-          report.
+          We haven&apos;t scanned this repo yet — hit{" "}
+          <span className="font-medium">Scan</span> to generate the first
+          report. Takes ~30–90 seconds.
         </p>
-        <UrlInput />
+        <div className="flex justify-center">
+          <UrlInput initialUrl={githubUrl} autoFocus />
+        </div>
       </div>
     </main>
   );

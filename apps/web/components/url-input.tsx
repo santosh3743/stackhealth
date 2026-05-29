@@ -8,9 +8,24 @@ const GITHUB_URL_RE = /^https?:\/\/github\.com\/[\w.-]+\/[\w.-]+\/?$/i;
 // RFC-ish; the backend is the source of truth, this is just a UX prefilter.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function UrlInput() {
+/**
+ * URL submit form.
+ *
+ * @param initialUrl Pre-fills the input. Used when arriving from a
+ *   `/r/owner/name` URL that we haven't scanned yet — the visitor
+ *   shouldn't have to re-type a URL we already know.
+ * @param autoFocus Focus the URL input on mount (useful when this is
+ *   the page's primary CTA).
+ */
+export function UrlInput({
+  initialUrl = "",
+  autoFocus = false,
+}: {
+  initialUrl?: string;
+  autoFocus?: boolean;
+} = {}) {
   const router = useRouter();
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initialUrl);
   const [email, setEmail] = useState("");
   const [emailExpanded, setEmailExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,6 +72,7 @@ export function UrlInput() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           disabled={loading}
+          autoFocus={autoFocus}
           className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
