@@ -37,6 +37,14 @@ class Settings(BaseSettings):
     # --- Observability ---
     sentry_dsn: str = ""
 
+    # --- Email (Resend) ---
+    # If unset, the worker logs the email body instead of sending. The free
+    # tier at https://resend.com handles 100 emails/day with no credit card.
+    resend_api_key: str = ""
+    email_from: str = "StackHealth <no-reply@stackhealth.dev>"
+    # For absolute report links in emails.
+    public_site_url: str = "http://localhost:3000"
+
     # --- Formula + scan limits ---
     formula_version: str = "v1.0"
     scan_wall_clock_timeout_seconds: int = 300

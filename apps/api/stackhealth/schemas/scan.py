@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 GITHUB_URL_RE = re.compile(
     r"^https?://github\.com/([\w.-]+)/([\w.-]+?)(?:\.git)?/?$", re.IGNORECASE
@@ -14,6 +14,9 @@ GITHUB_URL_RE = re.compile(
 
 class ScanCreate(BaseModel):
     repo_url: str = Field(..., examples=["https://github.com/fastapi/fastapi"])
+    # Optional. If provided, we email a one-line scan-complete notification
+    # so the user can close their tab and walk away.
+    notify_email: EmailStr | None = Field(default=None)
 
     @field_validator("repo_url")
     @classmethod
@@ -36,6 +39,15 @@ class ScanCreateResponse(BaseModel):
     report_url: str
 
 
+class ScanNotifyUpdate(BaseModel):
+    """Body for PATCH /api/scans/{id}/notify."""
+
+    notify_email: EmailStr | None = Field(
+        default=None,
+        description="Set to an email to opt in, or null to opt out.",
+    )
+
+
 class ScanScores(BaseModel):
     security: int
     quality: int
@@ -48,6 +60,9 @@ class RepoMini(BaseModel):
     name: str
     stars: int | None = None
     language: str | None = None
+    default_branch: str | None = None
+    pushed_at: datetime | None = None
+    license_spdx: str | None = None
 
 
 class ScanRead(BaseModel):
@@ -66,3 +81,7 @@ class ScanRead(BaseModel):
     tool_versions: dict[str, str] | None = None
     created_at: datetime
     completed_at: datetime | None = None
+    # `notify_enabled` is a boolean rather than echoing the email back, so the
+    # scan endpoint stays privacy-safe (the scan_id is unguessable but the
+    # endpoint is otherwise public).
+    notify_enabled: bool = False

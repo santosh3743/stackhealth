@@ -21,7 +21,7 @@ from stackhealth.models import Repo, Scan, ScanFinding
 from stackhealth.models.scan import ScanStatus
 from stackhealth.ratelimit import allow
 from stackhealth.schemas import ScanCreate, ScanCreateResponse, ScanRead
-from stackhealth.schemas.scan import RepoMini, ScanScores
+from stackhealth.schemas.scan import RepoMini, ScanNotifyUpdate, ScanScores
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -116,6 +116,7 @@ def create_scan(
         status=ScanStatus.queued,
         formula_version=settings.formula_version,
         requested_by_ip=ip,
+        notify_email=str(payload.notify_email) if payload.notify_email else None,
     )
     db.add(scan)
     db.commit()
@@ -157,6 +158,9 @@ def _scan_to_read(scan: Scan, repo: Repo) -> ScanRead:
             name=repo.name,
             stars=repo.stars,
             language=repo.language,
+            default_branch=repo.default_branch,
+            pushed_at=repo.pushed_at,
+            license_spdx=repo.license_spdx,
         ),
         status=scan.status.value,
         formula_version=scan.formula_version,
@@ -171,7 +175,34 @@ def _scan_to_read(scan: Scan, repo: Repo) -> ScanRead:
         tool_versions=scan.tool_versions,
         created_at=scan.created_at,
         completed_at=scan.completed_at,
+        notify_enabled=bool(scan.notify_email),
     )
+
+
+@router.patch("/{scan_id}/notify", status_code=204)
+def set_notify_email(
+    scan_id: uuid.UUID,
+    payload: ScanNotifyUpdate,
+    db: Session = Depends(get_db),
+) -> None:
+    """Add (or clear) a notification email for an in-progress scan.
+
+    Once the scan is complete, the email would never fire — so we reject
+    updates after the fact instead of silently ignoring them.
+    """
+    scan = db.get(Scan, scan_id)
+    if scan is None:
+        raise _err("scan_not_found", "Scan not found.", 404)
+    if scan.status == ScanStatus.complete:
+        raise _err(
+            "scan_already_complete",
+            "Scan is already complete — no notification will fire.",
+            409,
+        )
+    if scan.status == ScanStatus.failed:
+        raise _err("scan_failed", "Scan failed — cannot subscribe to notify.", 409)
+    scan.notify_email = str(payload.notify_email) if payload.notify_email else None
+    db.commit()
 
 
 @router.get("/{scan_id}", response_model=ScanRead)

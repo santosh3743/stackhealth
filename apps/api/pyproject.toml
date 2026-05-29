@@ -20,6 +20,7 @@ dependencies = [
     "sentry-sdk[fastapi]>=2.18.0",
     "python-multipart>=0.0.17",
     "pyyaml>=6.0.2",
+    "email-validator>=2.2.0",  # for pydantic.EmailStr in ScanCreate
 ]
 
 [project.optional-dependencies]

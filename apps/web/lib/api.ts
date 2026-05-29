@@ -37,6 +37,7 @@ export interface Scan {
   tool_versions?: Record<string, string>;
   created_at: string;
   completed_at?: string;
+  notify_enabled?: boolean;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -48,19 +49,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     let detail = res.statusText;
     try {
       const body = await res.json();
-      detail = body?.error?.message ?? detail;
+      const inner = body?.detail?.error?.message ?? body?.error?.message;
+      detail = inner ?? body?.detail ?? detail;
     } catch {
       /* ignore */
     }
     throw new Error(detail);
   }
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 
-export function submitScan(repo_url: string): Promise<ScanSummary> {
+export function submitScan(
+  repo_url: string,
+  notify_email?: string,
+): Promise<ScanSummary> {
+  const body: { repo_url: string; notify_email?: string } = { repo_url };
+  if (notify_email) body.notify_email = notify_email;
   return request<ScanSummary>("/api/scans", {
     method: "POST",
-    body: JSON.stringify({ repo_url }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -68,6 +76,39 @@ export function getScan(id: string): Promise<Scan> {
   return request<Scan>(`/api/scans/${id}`);
 }
 
+export function setScanNotifyEmail(id: string, email: string): Promise<void> {
+  return request<void>(`/api/scans/${id}/notify`, {
+    method: "PATCH",
+    body: JSON.stringify({ notify_email: email }),
+  });
+}
+
 export function getLatestForRepo(owner: string, name: string): Promise<Scan> {
   return request<Scan>(`/api/repos/${owner}/${name}/latest`);
+}
+
+export interface DiscoverScan {
+  scan_id: string;
+  owner: string;
+  name: string;
+  grade?: string | null;
+  overall_score?: number | null;
+  language?: string | null;
+  stars?: number | null;
+  completed_at?: string | null;
+}
+
+export function getRecentScans(limit = 10): Promise<{ scans: DiscoverScan[] }> {
+  return request<{ scans: DiscoverScan[] }>(
+    `/api/discover/recent?limit=${limit}`,
+  );
+}
+
+export function getTopScans(
+  limit = 10,
+  minStars = 0,
+): Promise<{ scans: DiscoverScan[] }> {
+  return request<{ scans: DiscoverScan[] }>(
+    `/api/discover/top?limit=${limit}&min_stars=${minStars}`,
+  );
 }

@@ -1369,6 +1369,7 @@ source = { editable = "." }
 dependencies = [
     { name = "alembic" },
     { name = "boto3" },
+    { name = "email-validator" },
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "psycopg", extra = ["binary"] },
@@ -1398,6 +1399,7 @@ dev = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.13.3" },
     { name = "boto3", specifier = ">=1.35.0" },
+    { name = "email-validator", specifier = ">=2.2.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.0" },
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13.0" },

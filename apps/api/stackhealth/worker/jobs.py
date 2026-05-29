@@ -15,6 +15,7 @@ from stackhealth.models import Repo, Scan, ScanFinding
 from stackhealth.models.finding import FindingEngine, FindingSeverity
 from stackhealth.models.scan import LetterGrade as ScanLetterGrade
 from stackhealth.models.scan import ScanStatus
+from stackhealth.notify import send_scan_complete
 from stackhealth.worker import pipeline
 
 log = logging.getLogger(__name__)
@@ -53,8 +54,24 @@ def run_scan(scan_id: str | uuid.UUID) -> None:
         scan.status = ScanStatus.cloning
         db.commit()
 
+    _PHASE_MAP = {
+        "cloning": ScanStatus.cloning,
+        "analyzing": ScanStatus.analyzing,
+        "scoring": ScanStatus.scoring,
+    }
+
+    def _on_phase(phase: str) -> None:
+        target = _PHASE_MAP.get(phase)
+        if target is None:
+            return
+        with SessionLocal() as db:
+            s = db.scalar(select(Scan).where(Scan.id == scan_uuid))
+            if s is not None and s.status != target:
+                s.status = target
+                db.commit()
+
     try:
-        result = pipeline.run(str(scan_uuid), owner, name)
+        result = pipeline.run(str(scan_uuid), owner, name, on_phase=_on_phase)
     except Exception as exc:
         log.exception("scan %s failed", scan_uuid)
         with SessionLocal() as db:
@@ -105,6 +122,38 @@ def run_scan(scan_id: str | uuid.UUID) -> None:
                     line_number=f.line_number,
                 )
             )
+        notify_email = s.notify_email
         db.commit()
 
     log.info("scan %s complete: %s (%s)", scan_uuid, result.overall, result.grade.value)
+
+    # Best-effort completion email. Never fail the job because of email problems.
+    if notify_email:
+        try:
+            scores = {
+                "security": result.security,
+                "quality": result.quality,
+                "hygiene": result.hygiene,
+                "community": result.community,
+            }
+            # Snapshot repo meta for the email — best-effort, separate session.
+            language = stars = None
+            with SessionLocal() as db:
+                r = db.scalar(select(Repo).where(Repo.owner == owner, Repo.name == name))
+                if r is not None:
+                    language = r.language
+                    stars = r.stars
+            send_scan_complete(
+                to_email=notify_email,
+                owner=owner,
+                name=name,
+                scan_id=str(scan_uuid),
+                overall=result.overall,
+                grade=result.grade.value,
+                partial=result.partial,
+                scores=scores,
+                language=language,
+                stars=stars,
+            )
+        except Exception:
+            log.exception("notify failed for scan %s", scan_uuid)

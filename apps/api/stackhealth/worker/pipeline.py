@@ -7,6 +7,7 @@ engine raises, the scan continues and `partial=True` is set on the result.
 import json
 import logging
 import os
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -98,20 +99,41 @@ def _persist_artifact(scan_id: str, kind: str, payload: Any) -> str | None:
     return str(fn)
 
 
-def run(scan_id: str, owner: str, name: str) -> PipelineResult:
-    """Execute the full pipeline. Caller wraps in a DB session to persist."""
+def run(
+    scan_id: str,
+    owner: str,
+    name: str,
+    on_phase: Callable[[str], None] | None = None,
+) -> PipelineResult:
+    """Execute the full pipeline. Caller wraps in a DB session to persist.
+
+    `on_phase(phase_name)` is called at boundaries: 'cloning', 'analyzing',
+    'scoring'. The job orchestrator uses it to update the Scan row's status
+    so the polling UI shows real progress instead of being stuck on
+    'cloning' for the entire pipeline.
+    """
+
+    def _phase(name: str) -> None:
+        if on_phase is not None:
+            try:
+                on_phase(name)
+            except Exception:
+                log.exception("on_phase callback raised; continuing")
+
     failures: list[EngineFailure] = []
     findings: list[PipelineFindings] = []
     breakdown: dict[str, Any] = {}
     tool_vers: dict[str, str] = {}
 
     # 1. Refresh GitHub metadata.
+    _phase("cloning")
     meta = github_meta.fetch_repo(owner, name)
     breakdown["stars"] = meta.stars
 
     # 2. Clone.
     with clone.shallow_clone(meta.clone_url) as (commit_sha, workdir):
         log.info("cloned %s @ %s", f"{owner}/{name}", commit_sha)
+        _phase("analyzing")
 
         # 3. Cloc — needed for LoC normalisation everywhere.
         cloc_result = _safe("cloc", lambda: cloc.run(workdir), failures, default=None)
@@ -270,6 +292,7 @@ def run(scan_id: str, owner: str, name: str) -> PipelineResult:
     )
 
     # 14. Compose sub-scores.
+    _phase("scoring")
     sec = security_score(
         scorecard_0_10=sc_aggregate,
         semgrep_0_100=sem_score,
