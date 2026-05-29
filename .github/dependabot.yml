@@ -1,0 +1,76 @@
+# Dependabot config — keeps the four package ecosystems in this repo
+# up to date with weekly PRs grouped to keep noise low.
+
+version: 2
+
+updates:
+  # ---------- Python ----------
+  - package-ecosystem: "pip"
+    directory: "/apps/api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Kolkata"
+    open-pull-requests-limit: 5
+    labels:
+      - "deps"
+      - "python"
+    groups:
+      python-minor-patch:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+        # Major bumps come as their own PR so we can review breaking
+        # changes individually.
+
+  # ---------- Node / pnpm (root workspace) ----------
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Kolkata"
+    open-pull-requests-limit: 5
+    labels:
+      - "deps"
+      - "javascript"
+    groups:
+      js-minor-patch:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+      next-react:
+        # Next + React track each other closely; bump together.
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+
+  # ---------- GitHub Actions ----------
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Kolkata"
+    labels:
+      - "deps"
+      - "ci"
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  # ---------- Docker base images ----------
+  - package-ecosystem: "docker"
+    directory: "/infra"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Kolkata"
+    labels:
+      - "deps"
+      - "docker"

@@ -1,0 +1,88 @@
+name: 🐛 Bug report
+description: Report something that isn't working as documented.
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. The more concrete the
+        report, the faster it gets fixed.
+
+        **Please do not report security issues here.** See
+        [SECURITY.md](https://github.com/santosh3743/stackhealth/blob/main/SECURITY.md)
+        for the private disclosure process.
+
+  - type: input
+    id: scan_url
+    attributes:
+      label: Scan URL or repo URL
+      description: |
+        If the bug is about a specific scan or report, paste the
+        `stackhealth.dev/r/...` URL or the GitHub URL of the repo.
+      placeholder: https://stackhealth.dev/r/owner/repo/<scan_id>
+    validations:
+      required: false
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: A clear description of what you observed.
+      placeholder: |
+        Example: I submitted https://github.com/foo/bar and the scan
+        completed with grade B, but the Findings section shows zero
+        findings even though Semgrep reported 4 warnings in the raw
+        artifact.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Numbered steps that we can follow to see the bug.
+      placeholder: |
+        1. Go to https://stackhealth.dev
+        2. Paste https://github.com/foo/bar
+        3. Click "Scan"
+        4. Wait for completion
+        5. Observe …
+    validations:
+      required: true
+
+  - type: input
+    id: formula_version
+    attributes:
+      label: Formula version
+      description: Shown in the report footer and at the top of /methodology.
+      placeholder: v1.0
+    validations:
+      required: false
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did you hit this?
+      options:
+        - Web (stackhealth.dev)
+        - API (api.stackhealth.dev)
+        - Self-hosted deploy
+        - Local development
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Screenshots, logs, browser, anything else useful.
+    validations:
+      required: false

@@ -1,0 +1,21 @@
+# CODEOWNERS — GitHub auto-requests review from these accounts on PRs
+# that touch the matching paths.
+#
+# Format: <path-glob> <@user-or-team> ...
+# Reference: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-security/customizing-your-repository/about-code-owners
+
+# Default — every PR gets a review request from the maintainer.
+* @santosh3743
+
+# The scoring formula is the most consequential surface. Any change
+# here must be reviewed by the maintainer.
+/apps/api/stackhealth/formula/  @santosh3743
+/docs/03-SCORING-METHODOLOGY.md  @santosh3743
+/packages/formula-spec/  @santosh3743
+
+# Infrastructure and CI changes can break deploys.
+/.github/workflows/  @santosh3743
+/infra/  @santosh3743
+
+# Migrations are also high-blast-radius.
+/apps/api/alembic/  @santosh3743

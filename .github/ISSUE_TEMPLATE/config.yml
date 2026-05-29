@@ -1,0 +1,19 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/santosh3743/stackhealth/security/advisories/new
+    about: |
+      Use GitHub's private security advisory flow. Do NOT open a public
+      issue. See SECURITY.md for the disclosure process.
+
+  - name: 💬 Ask a question or discuss an idea
+    url: https://github.com/santosh3743/stackhealth/discussions
+    about: |
+      For open-ended questions, design discussions, or sharing your
+      scan results — please use Discussions rather than an issue.
+
+  - name: 📖 Read the scoring methodology
+    url: https://stackhealth.dev/methodology
+    about: |
+      The open formula in human-readable form — every weight, every
+      threshold. Read this before opening a "score is wrong" issue.
