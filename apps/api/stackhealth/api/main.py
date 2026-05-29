@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from stackhealth import __version__
-from stackhealth.api.routes import badge, health, repos, scans
+from stackhealth.api.routes import badge, discover, health, repos, scans
 from stackhealth.config import settings
 
 
@@ -46,6 +46,7 @@ app.include_router(health.router, tags=["health"])
 app.include_router(scans.router, prefix="/api/scans", tags=["scans"])
 app.include_router(repos.router, prefix="/api/repos", tags=["repos"])
 app.include_router(badge.router, tags=["badge"])
+app.include_router(discover.router, tags=["discover"])
 
 
 @app.get("/", include_in_schema=False)
