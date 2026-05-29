@@ -155,13 +155,13 @@ Pure binary checklist. Each item is worth its listed points. Total = hygiene_sco
 |-------|--------|-----|
 | README.md exists and > 300 chars | 15 | File check + size |
 | LICENSE file exists | 15 | File check |
-| LICENSE is OSI-approved | 5 | Match against [OSI list](https://opensource.org/licenses) |
+| LICENSE is OSI-approved | 5 | Match against [OSI list](https://opensource.org/licenses), via GitHub's SPDX or local body sniffing |
 | CONTRIBUTING.md exists | 8 | File check |
 | CODE_OF_CONDUCT.md exists | 5 | File check |
 | SECURITY.md exists | 7 | File check |
 | `.github/workflows/` or `.gitlab-ci.yml` exists | 10 | CI present |
 | At least one workflow runs on pull_request | 5 | YAML parse |
-| Tests directory exists | 10 | Directory check |
+| Tests directory exists | 10 | Directory check at root and one level into common monorepo workspaces (apps/*, packages/*, services/*, libs/*) |
 | `.gitignore` exists | 3 | File check |
 | Repo has a description on GitHub | 5 | GitHub API |
 | Repo has topics/tags on GitHub | 5 | GitHub API |
