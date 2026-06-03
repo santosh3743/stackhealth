@@ -16,6 +16,12 @@ export default function HomePage() {
         </div>
         <nav className="flex gap-6 text-sm text-zinc-600 dark:text-zinc-300">
           <Link
+            href="/leaderboard"
+            className="hover:text-zinc-900 dark:hover:text-white"
+          >
+            Leaderboard
+          </Link>
+          <Link
             href="/methodology"
             className="hover:text-zinc-900 dark:hover:text-white"
           >

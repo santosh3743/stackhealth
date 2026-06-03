@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
+import { EmbedCard } from "@/components/embed-card";
 import { GradeBadge, type Grade } from "@/components/grade-badge";
 import { LogoMark } from "@/components/logo-mark";
 
@@ -145,27 +146,112 @@ function failedSet(reason?: string): Set<string> {
 }
 
 // Hygiene checklist items — names match keys produced by engines/hygiene.py
-const HYGIENE_ITEMS: { key: string; label: string; weight: number }[] = [
-  { key: "readme", label: "README.md exists & is non-trivial (>300 chars)", weight: 15 },
-  { key: "license_file", label: "LICENSE file", weight: 15 },
-  { key: "license_osi", label: "LICENSE is OSI-approved", weight: 5 },
-  { key: "contributing", label: "CONTRIBUTING guide", weight: 8 },
-  { key: "code_of_conduct", label: "CODE_OF_CONDUCT", weight: 5 },
-  { key: "security_md", label: "SECURITY.md", weight: 7 },
-  { key: "ci_present", label: "CI configured (.github/workflows or .gitlab-ci)", weight: 10 },
-  { key: "ci_pr_trigger", label: "CI runs on pull_request", weight: 5 },
-  { key: "tests_dir", label: "Tests directory present", weight: 10 },
-  { key: "gitignore", label: ".gitignore", weight: 3 },
-  { key: "description", label: "GitHub description set", weight: 5 },
-  { key: "topics", label: "GitHub topics set", weight: 5 },
-  { key: "recent_commit", label: "Last commit within 365 days", weight: 7 },
+const HYGIENE_ITEMS: { key: string; label: string; weight: number; info?: string }[] = [
+  {
+    key: "readme",
+    label: "README.md exists & is non-trivial (>300 chars)",
+    weight: 15,
+    info: "A README at the repo root with at least 300 characters. README.rst and README.markdown also count.",
+  },
+  {
+    key: "license_file",
+    label: "LICENSE file",
+    weight: 15,
+    info: "A LICENSE, LICENSE.md, or COPYING file at the root. Required for anyone to legally use your code.",
+  },
+  {
+    key: "license_osi",
+    label: "LICENSE is OSI-approved",
+    weight: 5,
+    info: "License SPDX matches an OSI-approved one (MIT, Apache-2.0, BSD-3-Clause, GPL-3.0, MPL-2.0, etc.). Detected from GitHub's license API and from the LICENSE body.",
+  },
+  {
+    key: "contributing",
+    label: "CONTRIBUTING guide",
+    weight: 8,
+    info: "CONTRIBUTING.md / CONTRIBUTING.rst at the root (or .github/). Tells outsiders how to file issues and submit PRs.",
+  },
+  {
+    key: "code_of_conduct",
+    label: "CODE_OF_CONDUCT",
+    weight: 5,
+    info: "CODE_OF_CONDUCT.md at the root or in .github/. Sets community behavior norms.",
+  },
+  {
+    key: "security_md",
+    label: "SECURITY.md",
+    weight: 7,
+    info: "SECURITY.md at the root or in .github/. Tells security researchers how to report vulnerabilities responsibly.",
+  },
+  {
+    key: "ci_present",
+    label: "CI configured (.github/workflows or .gitlab-ci)",
+    weight: 10,
+    info: "At least one workflow file in .github/workflows/ (or a .gitlab-ci.yml). Without CI, code lands unverified.",
+  },
+  {
+    key: "ci_pr_trigger",
+    label: "CI runs on pull_request",
+    weight: 5,
+    info: "At least one workflow triggers on `pull_request`. Otherwise CI only runs after merge, which defeats the point.",
+  },
+  {
+    key: "tests_dir",
+    label: "Tests directory present",
+    weight: 10,
+    info: "A tests/, test/, __tests__, or spec/ directory at root — or in any of apps/*, packages/*, services/*, libs/*, modules/*, crates/* for monorepos.",
+  },
+  {
+    key: "gitignore",
+    label: ".gitignore",
+    weight: 3,
+    info: ".gitignore at the root. Cheap signal that the repo is curated rather than dumped.",
+  },
+  {
+    key: "description",
+    label: "GitHub description set",
+    weight: 5,
+    info: "The one-line description shown under the repo name on GitHub. Helps discoverability.",
+  },
+  {
+    key: "topics",
+    label: "GitHub topics set",
+    weight: 5,
+    info: "At least one topic (tag) configured on the repo. Drives GitHub's category browse and search.",
+  },
+  {
+    key: "recent_commit",
+    label: "Last commit within 365 days",
+    weight: 7,
+    info: "Repo's `pushed_at` is within the last year. Older = likely abandoned.",
+  },
 ];
 
-const TEST_SIGNAL_ITEMS: { key: string; label: string; weight: number }[] = [
-  { key: "test_files", label: "Tests directory or test files present", weight: 40 },
-  { key: "ci_test_runner", label: "CI invokes a test runner", weight: 30 },
-  { key: "coverage_badge", label: "Coverage badge in README", weight: 20 },
-  { key: "coverage_config", label: "codecov.yml / coverage.xml present", weight: 10 },
+const TEST_SIGNAL_ITEMS: { key: string; label: string; weight: number; info?: string }[] = [
+  {
+    key: "test_files",
+    label: "Tests directory or test files present",
+    weight: 40,
+    info: "A tests/test/__tests__/spec directory exists at root or in a monorepo workspace. We don't run them — we just look for the structure.",
+  },
+  {
+    key: "ci_test_runner",
+    label: "CI invokes a test runner",
+    weight: 30,
+    info: "A CI workflow file mentions pytest, jest, vitest, mocha, go test, cargo test, mvn test, rspec, or similar. Tests aren't useful if CI doesn't run them.",
+  },
+  {
+    key: "coverage_badge",
+    label: "Coverage badge in README",
+    weight: 20,
+    info: "README contains a codecov.io, coveralls.io, or shields.io coverage badge URL. Public coverage signals commitment to quality.",
+  },
+  {
+    key: "coverage_config",
+    label: "codecov.yml / coverage.xml present",
+    weight: 10,
+    info: "A codecov.yml, .codecov.yml, or coverage.xml file exists at the root. Indicates coverage is actively measured, not just badged.",
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────
@@ -363,24 +449,28 @@ export default async function ScanReportPage({
       <section className="px-6 max-w-6xl mx-auto mt-10 space-y-6">
         <Dimension
           title="Security"
+          info="Supply-chain + code security posture. Weighted: 40% OpenSSF Scorecard (CI hardening, branch protection, signed releases, fuzzing…), 40% Semgrep p/security-audit findings, 20% known dependency CVEs from Trivy."
           score={scan.scores?.security}
           weight="30%"
           rows={[
             {
               label: "OpenSSF Scorecard",
               detail: "Aggregate across ~18 supply-chain checks",
+              info: "OpenSSF Scorecard runs ~18 checks (Branch-Protection, Code-Review, CI-Tests, Dangerous-Workflow, Dependency-Update-Tool, Fuzzing, License, Maintained, Pinned-Dependencies, SAST, Security-Policy, Signed-Releases, Token-Permissions, Vulnerabilities, Webhooks, etc.). We take the aggregate 0–10, multiply by 10 to get 0–100.",
               value: num(bd.scorecard),
               failed: failed.has("scorecard"),
             },
             {
               label: "Semgrep p/security-audit",
               detail: "LoC-normalised SAST finding density",
+              info: "Semgrep runs the p/security-audit ruleset (~150 rules). Each finding is weighted by severity (ERROR×3, WARNING×2, INFO×1), then divided by (LoC/1000+1) so a large repo isn't penalised for the same absolute count. 0 findings = 100; the score drops as density rises.",
               value: num(bd.semgrep),
               failed: failed.has("semgrep"),
             },
             {
               label: "Dependency CVEs (Trivy)",
               detail: "Critical/High/Medium/Low penalty",
+              info: "Trivy scans lockfiles + manifests for known CVEs. We start at 100 and subtract: Critical −25, High −10, Medium −3, Low −1. 0 vulns = 100.",
               value: num(bd.dependencies),
               failed: failed.has("trivy"),
             },
@@ -389,18 +479,21 @@ export default async function ScanReportPage({
 
         <Dimension
           title="Quality"
+          info="Internal code quality signals. Weighted: 30% complexity, 25% lint density, 20% duplication, 15% test signal (we look for tests + CI runner + coverage), 10% file size (no mega-files >1000 LoC)."
           score={scan.scores?.quality}
           weight="25%"
           rows={[
             {
               label: "Cyclomatic complexity (lizard)",
               detail: `Avg complexity: ${num(bd.avg_complexity) ?? "—"}`,
+              info: "Lizard measures cyclomatic complexity per function (CCN = decision points + 1). We take the repo-wide average. Avg ≤5 = 100, then drops linearly until avg ≥15 = 0. Lower is more readable and easier to test.",
               value: num(bd.complexity),
               failed: failed.has("complexity"),
             },
             {
               label: "Lint density",
               detail: `${num(bd.lint_issues) ?? 0} issues across detected languages`,
+              info: "We run the language-native linter on detected languages (ruff for Python, eslint for JS/TS, golangci-lint for Go, etc.) and count issues per 1000 lines. 0 issues = 100. The score drops as issue density rises.",
               value: num(bd.lint_density),
               failed: failed.has("lint"),
             },
@@ -410,18 +503,21 @@ export default async function ScanReportPage({
                 num(bd.duplication_percent) != null
                   ? `${num(bd.duplication_percent)}% duplicated`
                   : "—",
+              info: "jscpd detects copy-paste blocks across the codebase using token-level matching (default: ≥50 tokens, ≥5 lines). We exclude node_modules, dist, build, lockfiles, fixtures and *.min.js. 0% duplication = 100; each 1% costs 5 points.",
               value: num(bd.duplication),
               failed: failed.has("duplication"),
             },
             {
               label: "Test signal",
               detail: "See checklist below — we don't run tests, we look for them",
+              info: "We don't execute tests (sandbox rule). Instead we score 4 signals: tests directory present (40), CI invokes a test runner (30), coverage badge in README (20), coverage config file at root (10). Total /100. Breakdown below.",
               value: num(bd.test_signal),
               failed: failed.has("test_signal"),
             },
             {
               label: "File size",
               detail: `${num(bd.mega_files) ?? 0} files over 1000 LoC`,
+              info: "Count of source files exceeding 1000 lines (per cloc, which excludes blanks and comments). Mega-files are hard to test, review, and modify safely. 0 = 100; each mega-file costs 5 points.",
               value: num(bd.file_size),
               failed: failed.has("cloc"),
             },
@@ -437,6 +533,7 @@ export default async function ScanReportPage({
 
         <Dimension
           title="Hygiene"
+          info="OSS housekeeping checklist — 13 binary items totaling 100 points (README, LICENSE, CONTRIBUTING, CoC, SECURITY, CI, PR-triggered CI, tests dir, .gitignore, GH description, GH topics, recent commit). Pure discipline; the easiest dimension to max."
           score={scan.scores?.hygiene}
           weight="25%"
           rows={[]}
@@ -451,30 +548,35 @@ export default async function ScanReportPage({
 
         <Dimension
           title="Community"
+          info="Health of the community around the project. Weighted: 35% activity (recency + commit volume), 25% contributors (distinct authors in 365d), 20% popularity (star count, log-scaled), 20% responsiveness (median issue first-response time)."
           score={scan.scores?.community}
           weight="20%"
           rows={[
             {
               label: "Activity",
               detail: "Recency + commits in last 90 days",
+              info: "Combines `pushed_at` recency with commit volume. Last commit >365d ago = 0. Last commit 181–365d = 30. Within 180d: 40 + 2×commits-in-90d, capped at 100.",
               value: num(bd.activity),
               failed: failed.has("community"),
             },
             {
               label: "Contributors",
               detail: "Log₂ of distinct authors in last 365 days",
+              info: "Distinct authors with at least one commit in the last 365 days. Score = log₂(count + 1) × 25, capped at 100. So 1=25, 3=50, 7=75, 15=100. Logarithmic so a project doesn't need hundreds of contributors to score well.",
               value: num(bd.contributors),
               failed: failed.has("community"),
             },
             {
               label: "Popularity",
               detail: `Log₁₀ of stars (${num(bd.stars) ?? "—"})`,
+              info: "Score = log₁₀(stars + 1) × 25, capped at 100. So 100 stars = 50, 1000 stars = 75, 10000 stars = 100. Logarithmic so very early projects aren't punished, but a perfect score requires real adoption.",
               value: num(bd.popularity),
               failed: failed.has("community"),
             },
             {
               label: "Responsiveness",
               detail: "Median time-to-first-response on issues, last 90 days",
+              info: "Median hours from issue creation to first non-author comment, sampled from up to 20 issues opened in the last 90 days. <24h = 100, <72h = 80, <168h (1wk) = 60, <720h (30d) = 30, else 0. No issues in 90d = neutral 70.",
               value: num(bd.responsiveness),
               failed: failed.has("community"),
             },
@@ -625,14 +727,16 @@ export default async function ScanReportPage({
       </section>
 
       {/* EMBED */}
-      <section className="px-6 max-w-6xl mx-auto mt-10">
-        <h2 className="text-lg font-semibold mb-3">Embed in your README</h2>
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-3 bg-zinc-50 dark:bg-zinc-950">
-          <code className="text-xs break-all">
-            {`![StackHealth](${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/r/${owner}/${name}/badge.svg)`}
-          </code>
-        </div>
-      </section>
+      <EmbedCard
+        owner={owner}
+        name={name}
+        apiUrl={
+          process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
+        }
+        siteUrl={
+          process.env.NEXT_PUBLIC_SITE_URL ?? "https://stackhealth.dev"
+        }
+      />
 
       <footer className="px-6 max-w-6xl mx-auto mt-12 pt-6 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">
         <Link href="/methodology" className="hover:text-zinc-900 dark:hover:text-white">
@@ -649,21 +753,32 @@ export default async function ScanReportPage({
 
 function Dimension({
   title,
+  info,
   score,
   weight,
   rows,
   children,
 }: {
   title: string;
+  info?: string;
   score?: number;
   weight: string;
-  rows: { label: string; detail?: string; value: number | null; failed?: boolean }[];
+  rows: {
+    label: string;
+    detail?: string;
+    info?: string;
+    value: number | null;
+    failed?: boolean;
+  }[];
   children?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-      <header className="px-5 py-3 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-between">
-        <h2 className="font-semibold tracking-tight">{title}</h2>
+    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800">
+      <header className="rounded-t-xl px-5 py-3 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-between">
+        <h2 className="font-semibold tracking-tight flex items-center gap-2">
+          {title}
+          {info && <InfoTip text={info} />}
+        </h2>
         <div className="flex items-baseline gap-2">
           {score != null && (
             <span className="text-xl font-bold tabular-nums">{score}</span>
@@ -678,7 +793,10 @@ function Dimension({
             <li key={r.label} className="px-5 py-3 text-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="font-medium">{r.label}</div>
+                  <div className="font-medium flex items-center gap-1.5">
+                    {r.label}
+                    {r.info && <InfoTip text={r.info} />}
+                  </div>
                   {r.detail && (
                     <div className="text-xs text-zinc-500 mt-0.5">{r.detail}</div>
                   )}
@@ -719,7 +837,7 @@ function ChecklistBlock({
   scores,
 }: {
   heading: string;
-  items: { key: string; label: string; weight: number }[];
+  items: { key: string; label: string; weight: number; info?: string }[];
   scores: Record<string, number>;
   outOf: number;
 }) {
@@ -729,7 +847,7 @@ function ChecklistBlock({
         {heading}
       </div>
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
-        {items.map(({ key, label, weight }) => {
+        {items.map(({ key, label, weight, info }) => {
           const earned = scores[key] ?? 0;
           const passed = earned > 0;
           return (
@@ -746,6 +864,7 @@ function ChecklistBlock({
               <span className={passed ? "" : "text-zinc-500 line-through decoration-zinc-400/50"}>
                 {label}
               </span>
+              {info && <InfoTip text={info} />}
               <span className="ml-auto text-xs text-zinc-400 tabular-nums">
                 {passed ? `+${earned}` : `0 / ${weight}`}
               </span>
@@ -754,6 +873,34 @@ function ChecklistBlock({
         })}
       </ul>
     </div>
+  );
+}
+
+/**
+ * Compact, accessible info tooltip. Uses native title for screen readers
+ * + a styled hover popover for sighted users. No JS state, no portal —
+ * pure CSS group-hover.
+ */
+function InfoTip({ text }: { text: string }) {
+  return (
+    <span
+      className="relative inline-flex items-center group/info shrink-0"
+      tabIndex={0}
+      aria-label={text}
+    >
+      <span
+        className="w-3.5 h-3.5 rounded-full border border-zinc-400 dark:border-zinc-500 text-zinc-500 dark:text-zinc-400 text-[9px] font-semibold flex items-center justify-center cursor-help select-none hover:border-zinc-700 hover:text-zinc-700 dark:hover:border-zinc-200 dark:hover:text-zinc-200"
+        title={text}
+      >
+        i
+      </span>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute left-0 top-full mt-2 w-64 max-w-[min(16rem,calc(100vw-2rem))] px-3 py-2 rounded-lg bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 text-xs font-normal leading-relaxed shadow-lg ring-1 ring-zinc-700/40 dark:ring-zinc-300/40 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible group-focus/info:opacity-100 group-focus/info:visible transition-opacity z-50 normal-case tracking-normal whitespace-normal text-left"
+      >
+        {text}
+      </span>
+    </span>
   );
 }
 

@@ -114,8 +114,10 @@ export function getRecentScans(limit = 10): Promise<{ scans: DiscoverScan[] }> {
 export function getTopScans(
   limit = 10,
   minStars = 0,
+  language?: string,
 ): Promise<{ scans: DiscoverScan[] }> {
+  const lang = language ? `&language=${encodeURIComponent(language)}` : "";
   return request<{ scans: DiscoverScan[] }>(
-    `/api/discover/top?limit=${limit}&min_stars=${minStars}`,
+    `/api/discover/top?limit=${limit}&min_stars=${minStars}${lang}`,
   );
 }
