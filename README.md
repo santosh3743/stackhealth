@@ -8,11 +8,14 @@ Paste a URL. Get a grade. Share the report.
 
 [stackhealth.dev](https://stackhealth.dev) · [Methodology](https://stackhealth.dev/methodology) · [Contributing](./CONTRIBUTING.md)
 
-[![StackHealth](https://api.stackhealth.dev/r/santosh3743/stackhealth/badge.svg)](https://stackhealth.dev/r/santosh3743/stackhealth)
 [![CI](https://github.com/santosh3743/stackhealth/actions/workflows/ci.yml/badge.svg)](https://github.com/santosh3743/stackhealth/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/stackhealth?label=npm%3A%20stackhealth)](https://www.npmjs.com/package/stackhealth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Formula v1.0](https://img.shields.io/badge/Formula-v1.0-4f46e5.svg)](https://stackhealth.dev/methodology)
+
+<br/>
+
+[![StackHealth scorecard](https://api.stackhealth.dev/r/santosh3743/stackhealth/card.svg)](https://stackhealth.dev/r/santosh3743/stackhealth)
 
 </div>
 
@@ -240,17 +243,23 @@ Full reference: [`docs/09-API-DESIGN.md`](./docs/09-API-DESIGN.md).
 
 ---
 
-## Embed a badge in your README
+## Embed a badge or scorecard in your README
 
-After your repo has been scanned at least once, paste this into your own
-README:
+Two flavors, both always-latest, embed-and-forget:
 
 ```markdown
+<!-- compact badge — fits anywhere alongside other shields -->
 [![StackHealth](https://api.stackhealth.dev/r/OWNER/REPO/badge.svg)](https://stackhealth.dev/r/OWNER/REPO)
+
+<!-- rich scorecard — 440 × 220 with sub-dimension bars -->
+[![StackHealth scorecard](https://api.stackhealth.dev/r/OWNER/REPO/card.svg)](https://stackhealth.dev/r/OWNER/REPO)
 ```
 
-The badge SVG always renders the latest grade, so you embed it once and
-forget it. Or let the CLI generate it for you:
+The scorecard shows the overall grade, score, and all four
+sub-dimensions in one image — what you see at the top of *this* README
+is the live `card.svg` for the StackHealth repo itself.
+
+The CLI can spit out the badge markdown for you:
 
 ```bash
 $ npx stackhealth OWNER/REPO --badge

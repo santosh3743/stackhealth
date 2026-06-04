@@ -1,0 +1,50 @@
+# Root-level Action metadata. Required by the GitHub Marketplace —
+# it only detects actions whose action.yml lives at the repo root.
+# The actual source + bundle live under apps/action/. This file is
+# intentionally a thin shim that just repoints `main` at the bundle;
+# keep the inputs/outputs in sync with apps/action/action.yml if either
+# is edited.
+
+name: "StackHealth"
+description: "Score every PR against the StackHealth open-formula code health benchmark. Posts a sticky comment with base vs PR grades, sub-dimension breakdowns, and the delta."
+author: "Santosh Jha"
+branding:
+  icon: "activity"
+  color: "purple"
+
+inputs:
+  email:
+    description: "Email for scan-complete notifications. Set this once in repo secrets."
+    required: true
+  min-grade:
+    description: "Fail the check if the PR grade is below this letter grade (e.g. B, A-). Leave empty to never fail."
+    required: false
+    default: ""
+  github-token:
+    description: "GITHUB_TOKEN used to post the PR comment."
+    required: false
+    default: ${{ github.token }}
+  api-base:
+    description: "Override the StackHealth API base URL (default: https://api.stackhealth.dev)."
+    required: false
+    default: "https://api.stackhealth.dev"
+  site-base:
+    description: "Override the site base URL used in comment links."
+    required: false
+    default: "https://stackhealth.dev"
+
+outputs:
+  base-grade:
+    description: "Letter grade of the base branch (e.g. B+)."
+  head-grade:
+    description: "Letter grade of this PR's HEAD."
+  base-score:
+    description: "Numeric score of the base (0-100)."
+  head-score:
+    description: "Numeric score of the PR HEAD (0-100)."
+  delta:
+    description: "head-score minus base-score (negative if the PR regressed)."
+
+runs:
+  using: "node20"
+  main: "apps/action/dist/index.js"
