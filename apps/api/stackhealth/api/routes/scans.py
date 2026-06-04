@@ -91,10 +91,18 @@ def create_scan(
     #       fresh one.
     repo = db.scalar(select(Repo).where(Repo.owner == owner, Repo.name == name))
     if repo is not None:
+        # Dedupe is per (repo, ref) — scoring `main` doesn't reuse a `v2-beta`
+        # scan and vice versa. NULL ref means "default branch".
+        ref_match = (
+            Scan.requested_ref.is_(None)
+            if payload.ref is None
+            else Scan.requested_ref == payload.ref
+        )
         recent = db.scalar(
             select(Scan)
             .where(
                 Scan.repo_id == repo.id,
+                ref_match,
                 Scan.created_at >= datetime.now(UTC) - timedelta(hours=1),
             )
             .order_by(desc(Scan.created_at))
@@ -148,6 +156,7 @@ def create_scan(
         formula_version=settings.formula_version,
         requested_by_ip=ip,
         notify_email=submitted_email,  # deprecated; kept for back-compat
+        requested_ref=payload.ref,
     )
     db.add(scan)
     db.flush()  # populate scan.id without commit
@@ -197,6 +206,7 @@ def _scan_to_read(scan: Scan, repo: Repo) -> ScanRead:
         ),
         status=scan.status.value,
         formula_version=scan.formula_version,
+        requested_ref=scan.requested_ref,
         commit_sha=scan.commit_sha,
         overall_score=scan.overall_score,
         grade=scan.grade.value if scan.grade else None,

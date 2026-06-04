@@ -41,6 +41,7 @@ stackhealth <owner/repo> [options]
 | `--email <addr>` | Email for the scan-complete notification. Required by the API on first scan. Set `$STACKHEALTH_EMAIL` to skip the flag every time. |
 | `--json` | Print the full scan as JSON. No colors, no spinner. Pipe to `jq`. |
 | `--min-grade <G>` | Exit non-zero if grade is below `G` (e.g. `B`, `A-`). Use this in CI. |
+| `--ref <branch\|tag>` | Score a specific branch or tag instead of the repo's default branch. |
 | `--no-wait` | Submit and exit immediately with the scan_id and report URL. Useful when a downstream job will poll, or you just want to trigger a fresh scan. |
 | `--badge` | Print the README badge markdown for the repo and exit. No scan is submitted — the badge always reflects the latest grade. |
 | `--api <url>` | Override the API base URL. |

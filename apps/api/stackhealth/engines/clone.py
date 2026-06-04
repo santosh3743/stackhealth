@@ -19,8 +19,19 @@ class CloneFailed(RuntimeError):
 
 
 @contextmanager
-def shallow_clone(repo_url: str):
+def shallow_clone(repo_url: str, ref: str | None = None):
     """Clone `repo_url` into a temporary directory; yield (commit_sha, workdir).
+
+    If `ref` is provided, it must be a branch or tag name (NOT a SHA — see
+    note below). The clone targets only that ref via `git clone --branch`.
+
+    Why branches/tags only:
+        `git clone --branch` accepts branches and tags. Fetching by SHA on
+        a shallow clone needs `git fetch <sha>` on a server that has
+        uploadpack.allowReachableSHA1InWant enabled (true for github.com,
+        but the protocol is fiddlier). For v1 the scope is branch/tag,
+        which covers the GH Action use-case (head_ref / base_ref) and
+        manual "score the v2 branch" requests.
 
     On exit (success or failure) the tmpdir is deleted.
     Raises CloneFailed on timeout, size-cap breach, or non-zero exit.
@@ -34,10 +45,11 @@ def shallow_clone(repo_url: str):
             "1",
             "--filter",
             f"blob:limit={settings.clone_size_limit_mb}m",
-            repo_url,
-            str(workdir),
         ]
-        log.info("cloning", extra={"repo_url": repo_url})
+        if ref:
+            cmd += ["--branch", ref]
+        cmd += [repo_url, str(workdir)]
+        log.info("cloning", extra={"repo_url": repo_url, "ref": ref})
         try:
             subprocess.run(
                 cmd,

@@ -254,8 +254,13 @@ def run(
     owner: str,
     name: str,
     on_phase: Callable[[str], None] | None = None,
+    ref: str | None = None,
 ) -> PipelineResult:
-    """Execute the full pipeline. Caller wraps in a DB session to persist."""
+    """Execute the full pipeline. Caller wraps in a DB session to persist.
+
+    `ref` is an optional branch or tag name. None means "scan the repo's
+    default branch" (the original v1 behaviour).
+    """
 
     def _phase(phase: str) -> None:
         if on_phase is not None:
@@ -277,8 +282,8 @@ def run(
     meta = github_meta.fetch_repo(owner, name)
     breakdown["stars"] = meta.stars
 
-    with clone.shallow_clone(meta.clone_url) as (commit_sha, workdir):
-        log.info("cloned %s @ %s", f"{owner}/{name}", commit_sha)
+    with clone.shallow_clone(meta.clone_url, ref=ref) as (commit_sha, workdir):
+        log.info("cloned %s @ %s (ref=%s)", f"{owner}/{name}", commit_sha, ref or "default")
         _phase("analyzing")
 
         # ── phase 2a: cloc — feeds LoC normalisation everywhere ──

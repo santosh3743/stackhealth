@@ -71,5 +71,8 @@ class Scan(Base):
     tool_versions: Mapped[dict | None] = mapped_column(JSONB)
     requested_by_ip: Mapped[str | None] = mapped_column(INET)
     notify_email: Mapped[str | None] = mapped_column(Text)
+    # User-supplied branch or tag. NULL = scan the repo's default branch.
+    # The resolved git SHA lands in `commit_sha` after the clone.
+    requested_ref: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

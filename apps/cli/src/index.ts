@@ -22,6 +22,7 @@ import {
 
 interface Args {
   repo?: string;
+  ref?: string;
   email?: string;
   json: boolean;
   minGrade?: string;
@@ -34,7 +35,7 @@ interface Args {
   noWait: boolean;
 }
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 const HELP = `${bold("stackhealth")} — score any public GitHub repo against the open StackHealth formula.
 
@@ -52,6 +53,8 @@ ${bold("Options")}
   --json              Print the full scan as JSON. No colors, no spinner.
   --min-grade <G>     Exit non-zero if the resulting grade is below G (e.g. B, A-).
                       Useful in CI: \`stackhealth . --min-grade B || exit 1\`.
+  --ref <branch|tag>  Score a specific branch or tag instead of the repo's
+                      default branch (e.g. --ref v8.0.0, --ref release/2.x).
   --no-wait           Submit the scan and exit immediately with the scan_id and
                       report URL. No polling. Use for fire-and-forget triggers.
   --badge             Print the README badge markdown for this repo and exit.
@@ -99,6 +102,9 @@ function parseArgs(argv: string[]): Args {
       case "--no-wait":
       case "--nowait":
         args.noWait = true;
+        break;
+      case "--ref":
+        args.ref = argv[++i];
         break;
       case "--email":
         args.email = argv[++i];
@@ -252,12 +258,13 @@ async function main(): Promise<number> {
   const client = new ApiClient(args.apiBase);
   const spinner = new Spinner(!args.json && process.stderr.isTTY === true);
 
+  const refSuffix = args.ref ? ` @ ${args.ref}` : "";
   spinner.start(
-    `Submitting ${bold(`${parsed.owner}/${parsed.name}`)} for scoring…`,
+    `Submitting ${bold(`${parsed.owner}/${parsed.name}`)}${refSuffix} for scoring…`,
   );
   let submitted;
   try {
-    submitted = await client.submit(parsed.url, args.email);
+    submitted = await client.submit(parsed.url, args.email, args.ref);
   } catch (e) {
     spinner.stop();
     return handleApiError(e);

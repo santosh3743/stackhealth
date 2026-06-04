@@ -50,6 +50,7 @@ def run_scan(scan_id: str | uuid.UUID) -> None:
             log.error("repo for scan %s not found", scan_uuid)
             return
         owner, name = repo.owner, repo.name
+        requested_ref = scan.requested_ref
 
         scan.status = ScanStatus.cloning
         db.commit()
@@ -71,7 +72,7 @@ def run_scan(scan_id: str | uuid.UUID) -> None:
                 db.commit()
 
     try:
-        result = pipeline.run(str(scan_uuid), owner, name, on_phase=_on_phase)
+        result = pipeline.run(str(scan_uuid), owner, name, on_phase=_on_phase, ref=requested_ref)
     except Exception as exc:
         log.exception("scan %s failed", scan_uuid)
         with SessionLocal() as db:

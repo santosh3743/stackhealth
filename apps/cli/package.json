@@ -1,6 +1,6 @@
 {
   "name": "stackhealth",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Score any public GitHub repo against the StackHealth open-formula benchmark — from your terminal.",
   "keywords": [
     "code-quality",

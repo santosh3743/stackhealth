@@ -12,14 +12,19 @@ GITHUB_URL_RE = re.compile(
 )
 
 
+REF_RE = re.compile(r"^[\w./-]{1,255}$")
+
+
 class ScanCreate(BaseModel):
     repo_url: str = Field(..., examples=["https://github.com/fastapi/fastapi"])
-    # Optional. If provided, we email a one-line scan-complete notification
-    # so the user can close their tab and walk away.
     # Required. Every scan needs a notification target so the user can
     # walk away from the polling page — most scans take 30s to several
     # minutes and we don't want to make people babysit a progress bar.
     notify_email: EmailStr
+    # Optional branch or tag. If omitted, the repo's default branch is
+    # cloned (the original v1 behaviour). Useful for scoring release
+    # tags or feature branches.
+    ref: str | None = Field(default=None, examples=["main", "v8.0.0"])
 
     @field_validator("repo_url")
     @classmethod
@@ -27,6 +32,21 @@ class ScanCreate(BaseModel):
         if not GITHUB_URL_RE.match(v.strip()):
             raise ValueError("Must be a https://github.com/owner/repo URL")
         return v.strip()
+
+    @field_validator("ref")
+    @classmethod
+    def ref_is_safe(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = v.strip()
+        if not v:
+            return None
+        # git refs allow [A-Za-z0-9._/-] up to ~255 chars. Anything outside
+        # that almost certainly contains a shell metacharacter — refuse
+        # before it reaches the clone step.
+        if not REF_RE.match(v):
+            raise ValueError("ref may only contain letters, digits, dot, slash, dash, underscore")
+        return v
 
     @property
     def owner_and_name(self) -> tuple[str, str]:
@@ -73,6 +93,7 @@ class ScanRead(BaseModel):
     repo: RepoMini
     status: str
     formula_version: str
+    requested_ref: str | None = None
     commit_sha: str | None = None
     overall_score: int | None = None
     grade: str | None = None

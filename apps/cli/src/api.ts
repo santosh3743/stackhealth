@@ -5,7 +5,7 @@ const DEFAULT_BASE = "https://api.stackhealth.dev";
 
 // Identify ourselves so we show up cleanly in API logs and Cloudflare
 // analytics — and so any future server-side rule can route by client.
-const USER_AGENT = "stackhealth-cli/0.1.0 (+https://stackhealth.dev)";
+const USER_AGENT = "stackhealth-cli/0.2.0 (+https://stackhealth.dev)";
 
 const DEFAULT_HEADERS: HeadersInit = {
   "user-agent": USER_AGENT,
@@ -65,11 +65,20 @@ export class ApiError extends Error {
 export class ApiClient {
   constructor(public readonly base: string = DEFAULT_BASE) {}
 
-  async submit(repoUrl: string, email: string): Promise<ScanCreateResponse> {
+  async submit(
+    repoUrl: string,
+    email: string,
+    ref?: string,
+  ): Promise<ScanCreateResponse> {
+    const body: Record<string, string> = {
+      repo_url: repoUrl,
+      notify_email: email,
+    };
+    if (ref) body.ref = ref;
     const res = await fetch(`${this.base}/api/scans`, {
       method: "POST",
       headers: { ...DEFAULT_HEADERS, "content-type": "application/json" },
-      body: JSON.stringify({ repo_url: repoUrl, notify_email: email }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw await toError(res);
     return res.json() as Promise<ScanCreateResponse>;
