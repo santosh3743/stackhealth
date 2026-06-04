@@ -8,7 +8,9 @@ Paste a URL. Get a grade. Share the report.
 
 [stackhealth.dev](https://stackhealth.dev) · [Methodology](https://stackhealth.dev/methodology) · [Contributing](./CONTRIBUTING.md)
 
+[![StackHealth](https://api.stackhealth.dev/r/santosh3743/stackhealth/badge.svg)](https://stackhealth.dev/r/santosh3743/stackhealth)
 [![CI](https://github.com/santosh3743/stackhealth/actions/workflows/ci.yml/badge.svg)](https://github.com/santosh3743/stackhealth/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/stackhealth?label=npm%3A%20stackhealth)](https://www.npmjs.com/package/stackhealth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Formula v1.0](https://img.shields.io/badge/Formula-v1.0-4f46e5.svg)](https://stackhealth.dev/methodology)
 
@@ -30,6 +32,61 @@ github.com/pallets/click   →   stackhealth.dev/pallets/click
 That's the whole interaction. Submit a URL on the site, or just
 **replace `github.com` with `stackhealth.dev`** in any repo URL. Within
 ~30–90 seconds you get a letter grade backed by seven engines.
+
+---
+
+## Three ways to use it
+
+### 1. From your browser
+
+Go to **[stackhealth.dev](https://stackhealth.dev)** and paste any
+github.com URL — or just edit the URL bar. The leaderboard at
+[stackhealth.dev/leaderboard](https://stackhealth.dev/leaderboard) shows
+the highest-graded repos across languages.
+
+### 2. From your terminal
+
+```bash
+$ npx stackhealth fastapi/fastapi
+  fastapi/fastapi
+  A   91/100
+
+    Security   ████████████████████  100/100
+    Quality    █████████████████···   85/100
+    Hygiene    ████████████████████  100/100
+    Community  ████████████████····   80/100
+```
+
+Pipe-friendly (`--json`), CI-friendly (`--min-grade B` returns
+non-zero), and ref-aware (`--ref v8.0.0`). Full reference in
+[`apps/cli/README.md`](./apps/cli/README.md).
+
+### 3. From your pull requests
+
+Drop this workflow into `.github/workflows/stackhealth.yml` and every PR
+gets a sticky comment showing the base vs. PR grade, sub-dimension
+breakdowns, and the delta.
+
+```yaml
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: santosh3743/stackhealth@v0
+        with:
+          email: ${{ secrets.STACKHEALTH_EMAIL }}
+          min-grade: B    # optional gate
+```
+
+Full reference in [`apps/action/README.md`](./apps/action/README.md).
 
 ---
 
@@ -62,13 +119,15 @@ should, that's a bug.
 StackHealth/
 ├── apps/
 │   ├── web/                    Next.js 15 frontend (TypeScript + Tailwind)
-│   └── api/                    FastAPI + RQ worker (Python 3.12)
-│       ├── stackhealth/
-│       │   ├── api/            HTTP routes (incl. discover, scans, badge)
-│       │   ├── engines/        Scanning engines (semgrep, trivy, …)
-│       │   ├── formula/        The open scoring formula
-│       │   └── worker/         RQ jobs and the scan pipeline
-│       └── alembic/            Database migrations
+│   ├── api/                    FastAPI + RQ worker (Python 3.12)
+│   │   ├── stackhealth/
+│   │   │   ├── api/            HTTP routes (incl. discover, scans, badge)
+│   │   │   ├── engines/        Scanning engines (semgrep, trivy, …)
+│   │   │   ├── formula/        The open scoring formula
+│   │   │   └── worker/         RQ jobs and the scan pipeline
+│   │   └── alembic/            Database migrations
+│   ├── cli/                    `npx stackhealth` — TypeScript, zero deps
+│   └── action/                 GitHub Action — PR grade comments
 ├── packages/
 │   └── formula-spec/           Frozen, machine-readable formula
 ├── docs/                       Vision, methodology, architecture, API design
@@ -183,13 +242,20 @@ Full reference: [`docs/09-API-DESIGN.md`](./docs/09-API-DESIGN.md).
 
 ## Embed a badge in your README
 
-After scanning your repo at least once, drop this into your own README:
+After your repo has been scanned at least once, paste this into your own
+README:
 
 ```markdown
-[![StackHealth](https://api.stackhealth.dev/r/OWNER/REPO/badge.svg)](https://stackhealth.dev/OWNER/REPO)
+[![StackHealth](https://api.stackhealth.dev/r/OWNER/REPO/badge.svg)](https://stackhealth.dev/r/OWNER/REPO)
 ```
 
-It always reflects the most recent scan of your repo.
+The badge SVG always renders the latest grade, so you embed it once and
+forget it. Or let the CLI generate it for you:
+
+```bash
+$ npx stackhealth OWNER/REPO --badge
+[![StackHealth](https://api.stackhealth.dev/r/OWNER/REPO/badge.svg)](https://stackhealth.dev/r/OWNER/REPO)
+```
 
 ---
 
