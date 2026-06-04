@@ -1,0 +1,38 @@
+# Dogfood: every PR against this repo gets graded by the StackHealth
+# Action it ships. If the Action is broken on a real runner, we find out
+# here before any external adopter does.
+#
+# Uses @v0 (the floating major-version tag) — same line we recommend in
+# README and apps/action/README.md. If we ever cut a breaking v1, bump
+# this and the documented snippet together.
+#
+# `pull_request` runs with a read-only GITHUB_TOKEN on PRs from forks,
+# so commenting will silently fail on cross-repo PRs. That's fine for
+# v1 — same-repo PRs are the common case and the Action handles the
+# 403 cleanly. If forks become a regular contributor flow, swap this
+# to a paired pull_request_target workflow with explicit permissions.
+
+name: StackHealth
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    # Skip when the PR comes from a fork — GITHUB_TOKEN can't comment
+    # back and the scan still costs worker time. (Maintainers can
+    # always re-run manually for fork PRs they want graded.)
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: santosh3743/stackhealth@v0
+        with:
+          email: ${{ secrets.STACKHEALTH_EMAIL }}
+          # min-grade intentionally unset — first dogfood pass watches
+          # for regressions via the comment rather than blocking merge.
+          # Tighten later once the baseline is stable.
