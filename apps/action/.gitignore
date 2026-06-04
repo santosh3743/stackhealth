@@ -1,0 +1,3 @@
+# Keep dist/ checked in — GitHub Actions runners only see what's in the
+# repo, and this is a JS Action whose entrypoint is dist/index.js.
+!dist/

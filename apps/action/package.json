@@ -1,0 +1,22 @@
+{
+  "name": "stackhealth-action",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GitHub Action that posts StackHealth grades on every PR.",
+  "license": "MIT",
+  "author": "Santosh Jha",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/index.js --minify --legal-comments=none",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.7.0"
+  }
+}
