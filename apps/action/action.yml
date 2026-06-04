@@ -1,5 +1,5 @@
-name: "StackHealth"
-description: "Score every PR against the StackHealth open-formula code health benchmark. Posts a sticky comment with base vs PR grades."
+name: "StackHealth Grade"
+description: "Score every PR against the StackHealth open-formula code health benchmark. Comments the grade and delta."
 author: "Santosh Jha"
 branding:
   icon: "activity"

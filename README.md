@@ -1,21 +1,28 @@
 <div align="center">
 
-# StackHealth
+<h1>StackHealth</h1>
+<p><strong>The open code health benchmark for any public GitHub repo.</strong><br/>
+Paste a URL. Get a grade. Share the report.</p>
 
-**The open code health benchmark for any public GitHub repo.**
+<p>
+  <a href="https://stackhealth.dev">stackhealth.dev</a> ·
+  <a href="https://stackhealth.dev/leaderboard">Leaderboard</a> ·
+  <a href="https://stackhealth.dev/methodology">Methodology</a> ·
+  <a href="./apps/cli">CLI</a> ·
+  <a href="./apps/action">Action</a> ·
+  <a href="./CONTRIBUTING.md">Contributing</a>
+</p>
 
-Paste a URL. Get a grade. Share the report.
+<p>
+  <a href="https://github.com/santosh3743/stackhealth/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/santosh3743/stackhealth/actions/workflows/ci.yml/badge.svg"/></a>
+  <a href="https://www.npmjs.com/package/stackhealth"><img alt="npm" src="https://img.shields.io/npm/v/stackhealth?label=npm%3A%20stackhealth"/></a>
+  <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"/></a>
+  <a href="https://stackhealth.dev/methodology"><img alt="Formula v1.0" src="https://img.shields.io/badge/Formula-v1.0-4f46e5.svg"/></a>
+</p>
 
-[stackhealth.dev](https://stackhealth.dev) · [Methodology](https://stackhealth.dev/methodology) · [Contributing](./CONTRIBUTING.md)
-
-[![CI](https://github.com/santosh3743/stackhealth/actions/workflows/ci.yml/badge.svg)](https://github.com/santosh3743/stackhealth/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/stackhealth?label=npm%3A%20stackhealth)](https://www.npmjs.com/package/stackhealth)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Formula v1.0](https://img.shields.io/badge/Formula-v1.0-4f46e5.svg)](https://stackhealth.dev/methodology)
-
-<br/>
-
-[![StackHealth scorecard](https://api.stackhealth.dev/r/santosh3743/stackhealth/card.svg)](https://stackhealth.dev/r/santosh3743/stackhealth)
+<a href="https://stackhealth.dev/r/santosh3743/stackhealth">
+  <img alt="StackHealth scorecard" width="380" src="https://api.stackhealth.dev/r/santosh3743/stackhealth/card.svg"/>
+</a>
 
 </div>
 
