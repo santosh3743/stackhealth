@@ -50,7 +50,7 @@ def _from_binary(owner: str, name: str) -> ScorecardResult:
     # The binary runs ~18 supply-chain checks against the GitHub API. Popular
     # repos hit the api.scorecard.dev cache and skip this path; we only land
     # here for long-tail repos. Mature, active repos (fastapi, django, etc.)
-    # with thousands of branches/releases/commits can take 5–9 minutes for
+    # with thousands of branches/releases/commits can take 5 to 9 minutes for
     # the full crawl — each check makes multiple GitHub API calls and some
     # (Fuzzing, Dangerous-Workflow) walk every workflow file. The wall-clock
     # scan timeout (settings.scan_wall_clock_timeout_seconds) is the outer
