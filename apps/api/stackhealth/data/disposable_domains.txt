@@ -1,0 +1,142 @@
+# Disposable / throwaway email domains. One domain per line, lowercase.
+# Lines starting with '#' and blank lines are ignored.
+#
+# Curated from the disposable-email-domains project
+# (https://github.com/disposable-email-domains/disposable-email-domains)
+# — a focused subset of the most common providers. We deliberately keep
+# this list small and curated rather than vendoring all ~3,000 entries,
+# because:
+#   1. The long tail is rarely worth the binary size + match cost.
+#   2. False positives on a real customer email are worse than letting
+#      one obscure disposable through.
+#
+# When you find a real throwaway domain in the subscribers table that
+# isn't here, just add the apex domain (one line) and ship — no other
+# wiring required.
+
+# 10minutemail family
+10minutemail.com
+10minutemail.net
+20minutemail.com
+30minutemail.com
+
+# mailinator family
+mailinator.com
+mailinator.net
+mailinator2.com
+notmailinator.com
+
+# guerrillamail family
+guerrillamail.com
+guerrillamail.net
+guerrillamail.org
+guerrillamail.biz
+guerrillamail.de
+sharklasers.com
+guerrillamailblock.com
+grr.la
+pokemail.net
+spam4.me
+
+# temp-mail / tempmail family
+tempmail.com
+temp-mail.org
+temp-mail.io
+tempmailaddress.com
+tempinbox.com
+tempr.email
+tmpmail.org
+tmpmail.net
+tmpeml.com
+
+# yopmail family
+yopmail.com
+yopmail.net
+yopmail.fr
+cool.fr.nf
+jetable.fr.nf
+
+# discard-only inboxes
+maildrop.cc
+mailcatch.com
+trashmail.com
+trashmail.net
+trashmail.de
+trashmail.me
+spam.la
+spambog.com
+mytemp.email
+fakeinbox.com
+mt2015.com
+mt2014.com
+inboxbear.com
+binkmail.com
+bobmail.info
+chammy.info
+
+# getnada / dropmail / etc.
+getnada.com
+nada.email
+dropmail.me
+emailondeck.com
+mohmal.com
+moakt.com
+disposablemail.com
+
+# discard.email family
+discard.email
+discardmail.com
+discardmail.de
+
+# throwawaymail family
+throwawaymail.com
+throwam.com
+
+# anonymouse
+anonymouse.org
+anonymousmail.org
+
+# misc popular providers
+mailnesia.com
+mailnull.com
+spambox.us
+spambox.org
+fakemailgenerator.com
+emailtemporanea.com
+emailtemporanea.net
+mintemail.com
+spamgourmet.com
+mailexpire.com
+mailforspam.com
+mvrht.com
+mvrht.net
+0wnd.net
+0wnd.org
+spamfree24.org
+spamfree24.de
+spamfree24.com
+sogetthis.com
+incognitomail.com
+incognitomail.net
+incognitomail.org
+spamspot.com
+deadaddress.com
+emltmp.com
+spamavert.com
+
+# common url-shortened disposables seen in scan submissions
+mailtemp.uk
+linshiyou.com
+yapped.net
+emkei.cz
+sneakemail.com
+mailcuk.com
+crazymailing.com
+emailfake.com
+mailto.plus
+fexpost.com
+rcpt.at
+nowmymail.com
+asana.email
+inboxalias.com
+inboxkitten.com

@@ -7,6 +7,8 @@ from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from stackhealth.disposable_email import is_disposable
+
 GITHUB_URL_RE = re.compile(
     r"^https?://github\.com/([\w.-]+)/([\w.-]+?)(?:\.git)?/?$", re.IGNORECASE
 )
@@ -25,6 +27,16 @@ class ScanCreate(BaseModel):
     # cloned (the original v1 behaviour). Useful for scoring release
     # tags or feature branches.
     ref: str | None = Field(default=None, examples=["main", "v8.0.0"])
+
+    @field_validator("notify_email")
+    @classmethod
+    def email_not_disposable(cls, v: str) -> str:
+        if is_disposable(str(v)):
+            raise ValueError(
+                "Disposable email addresses aren't supported — please use a "
+                "real inbox so we can deliver the scan-complete email."
+            )
+        return v
 
     @field_validator("repo_url")
     @classmethod
@@ -69,6 +81,16 @@ class ScanNotifyUpdate(BaseModel):
         default=None,
         description="Set to an email to opt in, or null to opt out.",
     )
+
+    @field_validator("notify_email")
+    @classmethod
+    def email_not_disposable(cls, v: str | None) -> str | None:
+        if v is not None and is_disposable(str(v)):
+            raise ValueError(
+                "Disposable email addresses aren't supported — please use a "
+                "real inbox so we can deliver the scan-complete email."
+            )
+        return v
 
 
 class ScanScores(BaseModel):

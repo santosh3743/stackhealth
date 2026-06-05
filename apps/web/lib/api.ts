@@ -59,7 +59,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     try {
       const body = await res.json();
       const inner = body?.detail?.error?.message ?? body?.error?.message;
-      detail = inner ?? body?.detail ?? detail;
+      const raw = inner ?? body?.detail ?? detail;
+      // Pydantic 422 returns detail as an array of { msg, loc, ... }.
+      // Pull the first human-readable msg and strip the "Value error, "
+      // prefix Pydantic prepends to field_validator messages.
+      if (Array.isArray(raw)) {
+        const first = raw[0];
+        const msg = typeof first === "string" ? first : first?.msg;
+        detail = (msg ?? detail).replace(/^Value error,\s*/i, "");
+      } else if (typeof raw === "string") {
+        detail = raw;
+      }
     } catch {
       /* ignore */
     }
