@@ -49,9 +49,12 @@ def _from_binary(owner: str, name: str) -> ScorecardResult:
         env["GITHUB_AUTH_TOKEN"] = env["GITHUB_TOKEN"]
     # The binary runs ~18 supply-chain checks against the GitHub API. Popular
     # repos hit the api.scorecard.dev cache and skip this path; we only land
-    # here for long-tail repos where the full crawl can take 4-5 minutes.
-    # The wall-clock scan timeout (settings.scan_wall_clock_timeout_seconds)
-    # is the outer bound — this just stops one engine from eating it all.
+    # here for long-tail repos. Mature, active repos (fastapi, django, etc.)
+    # with thousands of branches/releases/commits can take 5–9 minutes for
+    # the full crawl — each check makes multiple GitHub API calls and some
+    # (Fuzzing, Dangerous-Workflow) walk every workflow file. The wall-clock
+    # scan timeout (settings.scan_wall_clock_timeout_seconds) is the outer
+    # bound — this just stops one engine from eating it all.
     proc = run_capture(
         [
             "scorecard",
@@ -59,7 +62,7 @@ def _from_binary(owner: str, name: str) -> ScorecardResult:
             "--format=json",
             "--show-details",
         ],
-        timeout=300,
+        timeout=600,
     )
     if not proc.stdout.strip():
         raise EngineFailed(f"scorecard produced no output; stderr: {proc.stderr[:200]}")

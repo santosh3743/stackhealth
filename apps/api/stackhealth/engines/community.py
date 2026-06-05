@@ -6,6 +6,7 @@ Reference: docs/03 §4. All GitHub REST calls go through `_gh`.
 import logging
 import math
 import statistics
+import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 
@@ -48,35 +49,83 @@ def collect(owner: str, name: str, *, stars: int, pushed_at: datetime | None) ->
     if pushed_at is not None:
         sig.days_since_last_commit = (now - pushed_at).days
 
-    # commits in last 90 days
+    # commits in last 90 days. Keep the raw payload around so we can also
+    # use it as a fallback contributor source if /stats/contributors is
+    # still cold (GitHub returns 202 on the first call for popular repos).
+    commits_90d: list[dict] = []
     try:
         r = _gh(
             f"/repos/{owner}/{name}/commits",
             {"since": since_90.isoformat(), "per_page": 100},
         )
         if r.status_code == 200:
-            commits = r.json()
-            sig.commits_last_90d = len(commits)
+            commits_90d = r.json() or []
+            sig.commits_last_90d = len(commits_90d)
             # If exactly 100 returned, there might be more — we cap at 100 for scoring.
     except httpx.HTTPError as e:
         log.warning("commits api failed: %s", e)
 
-    # contributors in last year — use participation endpoint for weekly stats
+    # contributors in last year — /stats/contributors is expensive on the
+    # GitHub side. Cold-cache responses come back as HTTP 202 with an
+    # empty body and "stats are being computed, try again later". Retry
+    # a few times before giving up.
+    contributors_resolved = False
     try:
-        r = _gh(f"/repos/{owner}/{name}/stats/contributors")
-        if r.status_code == 200:
-            data = r.json() or []
-            active: set[str] = set()
-            cutoff = since_365.timestamp()
-            for c in data:
-                weeks = c.get("weeks", []) or []
-                if any(w.get("w", 0) >= cutoff and w.get("c", 0) > 0 for w in weeks):
-                    login = (c.get("author") or {}).get("login")
-                    if login:
-                        active.add(login)
-            sig.contributors_last_365d = len(active)
+        for attempt in range(3):
+            r = _gh(f"/repos/{owner}/{name}/stats/contributors")
+            if r.status_code == 200:
+                data = r.json() or []
+                if data:
+                    active: set[str] = set()
+                    cutoff = since_365.timestamp()
+                    for c in data:
+                        weeks = c.get("weeks", []) or []
+                        if any(w.get("w", 0) >= cutoff and w.get("c", 0) > 0 for w in weeks):
+                            login = (c.get("author") or {}).get("login")
+                            if login:
+                                active.add(login)
+                    sig.contributors_last_365d = len(active)
+                    contributors_resolved = True
+                break
+            if r.status_code == 202:
+                # Stats are being computed. Back off and try again.
+                log.info(
+                    "contributors stats warming for %s/%s (attempt %d)",
+                    owner,
+                    name,
+                    attempt + 1,
+                )
+                time.sleep(2.0 * (attempt + 1))
+                continue
+            # Any other status: don't retry.
+            break
     except httpx.HTTPError as e:
         log.warning("contributors api failed: %s", e)
+
+    # Fallback: if the stats endpoint never warmed up, dedupe authors
+    # from the 90-day commits list. This undercounts (only 90d, capped
+    # at 100 commits), but it's better than reporting 0 for a clearly
+    # active project.
+    if not contributors_resolved and commits_90d:
+        fallback_logins: set[str] = set()
+        for c in commits_90d:
+            login = ((c.get("author") or {}) or {}).get("login")
+            if login:
+                fallback_logins.add(login)
+            else:
+                # Anonymous commit (no linked GH account) — fall back to
+                # the commit author email so we don't undercount.
+                email = ((c.get("commit") or {}).get("author") or {}).get("email")
+                if email:
+                    fallback_logins.add(f"email:{email}")
+        if fallback_logins:
+            sig.contributors_last_365d = len(fallback_logins)
+            log.info(
+                "contributors stats cold for %s/%s — using 90d fallback: %d",
+                owner,
+                name,
+                len(fallback_logins),
+            )
 
     # responsiveness: median first-response on issues opened in last 90 days
     try:
