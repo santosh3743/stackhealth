@@ -16,6 +16,11 @@ def _scan_summary(scan: Scan) -> dict:
         "id": str(scan.id),
         "grade": scan.grade.value if scan.grade else None,
         "overall_score": scan.overall_score,
+        "security_score": scan.security_score,
+        "quality_score": scan.quality_score,
+        "hygiene_score": scan.hygiene_score,
+        "community_score": scan.community_score,
+        "commit_sha": scan.commit_sha,
         "completed_at": scan.completed_at,
     }
 

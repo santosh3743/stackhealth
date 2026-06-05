@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { EmbedCard } from "@/components/embed-card";
 import { GradeBadge, type Grade } from "@/components/grade-badge";
 import { LogoMark } from "@/components/logo-mark";
+import { TrendChart, type TrendPoint } from "@/components/trend-chart";
 
 const API_BASE =
   process.env.INTERNAL_API_URL ??
@@ -61,6 +62,19 @@ async function fetchScan(scanId: string): Promise<Scan | null> {
   });
   if (!r.ok) return null;
   return r.json();
+}
+
+async function fetchHistory(owner: string, name: string): Promise<TrendPoint[]> {
+  try {
+    const r = await fetch(`${API_BASE}/api/repos/${owner}/${name}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!r.ok) return [];
+    const data = await r.json();
+    return (data.scan_history ?? []) as TrendPoint[];
+  } catch {
+    return [];
+  }
 }
 
 async function fetchFindings(scanId: string): Promise<Finding[]> {
@@ -283,7 +297,10 @@ export default async function ScanReportPage({
   }
 
   const grade = (scan.grade ?? "F") as Grade;
-  const findings = await fetchFindings(scanId);
+  const [findings, history] = await Promise.all([
+    fetchFindings(scanId),
+    fetchHistory(owner, name),
+  ]);
   const findingsByEngine = findings.reduce<Record<string, Finding[]>>((acc, f) => {
     (acc[f.engine] ??= []).push(f);
     return acc;
@@ -444,6 +461,14 @@ export default async function ScanReportPage({
             </div>
           ))}
       </section>
+
+      {/* HISTORY TREND */}
+      <TrendChart
+        owner={owner}
+        name={name}
+        history={history}
+        currentScanId={scanId}
+      />
 
       {/* DIMENSION BREAKDOWNS */}
       <section className="px-6 max-w-6xl mx-auto mt-10 space-y-6">
