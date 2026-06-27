@@ -14,6 +14,19 @@ see `docs/03-SCORING-METHODOLOGY.md`).
   `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue and PR
   templates, Dependabot config, CODEOWNERS.
 
+## [0.1.1] — 2026-06-27
+
+### Fixed
+- **Action bundle failed to load on every run.** The esbuild bundle is
+  CommonJS but `apps/action/package.json` declared `"type": "module"`, so
+  Node treated `dist/index.js` as ESM and threw `require is not defined in
+  ES module scope` — breaking the dogfood `grade` check on every PR.
+  Removed the stray `type` field; the `v0` tag now points at the fix.
+- **Web test script crashed at startup.** `vitest` 4 requires `vite`
+  ^6/^7/^8 but pnpm had resolved `vite@5`, causing
+  `ERR_PACKAGE_PATH_NOT_EXPORTED`. Pinned `vite` ^7.1.0 and switched the
+  script to `vitest run --passWithNoTests`.
+
 ## [0.1.0] — 2026-05-29
 
 The MVP, ready for a private beta.
