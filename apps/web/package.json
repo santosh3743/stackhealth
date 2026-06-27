@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.0",
@@ -28,6 +28,7 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^4.3.1",
     "typescript": "^6.0.3",
+    "vite": "^7.1.0",
     "vitest": "^4.1.8"
   }
 }
