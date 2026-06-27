@@ -5,7 +5,6 @@
   "description": "GitHub Action that posts StackHealth grades on every PR.",
   "license": "MIT",
   "author": "Santosh Jha",
-  "type": "module",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/index.js --minify --legal-comments=none",
     "typecheck": "tsc -p tsconfig.json --noEmit"
