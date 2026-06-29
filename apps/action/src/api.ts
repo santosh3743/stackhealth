@@ -58,7 +58,19 @@ export class ApiError extends Error {
 }
 
 export class ApiClient {
-  constructor(public readonly base: string) {}
+  private readonly headers: Record<string, string>;
+
+  constructor(
+    public readonly base: string,
+    ciToken?: string,
+  ) {
+    this.headers = { ...DEFAULT_HEADERS };
+    // Sent on every request so a Cloudflare WAF rule can recognise CI
+    // traffic and skip the bot challenge that otherwise 403s GitHub
+    // Actions runners. Empty/unset = omitted, so behaviour is unchanged
+    // when no secret is configured.
+    if (ciToken) this.headers["x-stackhealth-ci"] = ciToken;
+  }
 
   async submit(
     repoUrl: string,
@@ -72,7 +84,7 @@ export class ApiClient {
     if (ref) body.ref = ref;
     const res = await fetch(`${this.base}/api/scans`, {
       method: "POST",
-      headers: { ...DEFAULT_HEADERS, "content-type": "application/json" },
+      headers: { ...this.headers, "content-type": "application/json" },
       body: JSON.stringify(body),
     });
     if (!res.ok) throw await toError(res);
@@ -81,7 +93,7 @@ export class ApiClient {
 
   async get(scanId: string): Promise<ScanRead> {
     const res = await fetch(`${this.base}/api/scans/${scanId}`, {
-      headers: DEFAULT_HEADERS,
+      headers: this.headers,
     });
     if (!res.ok) throw await toError(res);
     return res.json() as Promise<ScanRead>;

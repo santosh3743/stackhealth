@@ -33,6 +33,9 @@ jobs:
       - uses: santosh3743/stackhealth@v0
         with:
           email: ${{ secrets.STACKHEALTH_EMAIL }}
+          # Shared secret matched by the Cloudflare WAF rule that lets CI
+          # traffic past bot protection. No-op until the secret is set.
+          ci-token: ${{ secrets.STACKHEALTH_CI_TOKEN }}
           # min-grade intentionally unset — first dogfood pass watches
           # for regressions via the comment rather than blocking merge.
           # Tighten later once the baseline is stable.

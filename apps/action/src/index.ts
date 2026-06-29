@@ -19,6 +19,8 @@ async function run(): Promise<void> {
   const apiBase = core.getInput("api-base") || "https://api.stackhealth.dev";
   const siteBase = core.getInput("site-base") || "https://stackhealth.dev";
   const token = core.getInput("github-token", { required: true });
+  const ciToken = core.getInput("ci-token");
+  if (ciToken) core.setSecret(ciToken);
 
   const ctx = github.context;
   if (ctx.eventName !== "pull_request" && ctx.eventName !== "pull_request_target") {
@@ -48,7 +50,7 @@ async function run(): Promise<void> {
   core.info(`Base: ${baseRepoSlug}@${baseRef}`);
   core.info(`PR:   ${headRepoSlug}@${headRef}`);
 
-  const client = new ApiClient(apiBase);
+  const client = new ApiClient(apiBase, ciToken || undefined);
 
   let base: ScanRead;
   let head: ScanRead;

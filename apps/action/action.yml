@@ -25,6 +25,10 @@ inputs:
     description: "Override the site base URL used in comment links."
     required: false
     default: "https://stackhealth.dev"
+  ci-token:
+    description: "Shared secret sent as the `x-stackhealth-ci` request header so a Cloudflare WAF rule can let CI traffic past bot protection (Actions runners are otherwise 403'd). Optional — set from repo secrets; omit to disable."
+    required: false
+    default: ""
 
 outputs:
   base-grade:
