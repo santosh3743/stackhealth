@@ -46,6 +46,7 @@ jobs:
 | `github-token` | no | `${{ github.token }}` | Used to post the PR comment. The default works for same-repo PRs. |
 | `api-base` | no | `https://api.stackhealth.dev` | Override for self-hosted / staging. |
 | `site-base` | no | `https://stackhealth.dev` | Override the report URL in the comment. |
+| `ci-token` | no | `""` | Shared secret sent as the `x-stackhealth-ci` header so a Cloudflare WAF rule can let CI traffic past bot protection. Omit to disable. |
 
 ## Outputs
 
