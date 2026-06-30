@@ -1,0 +1,33 @@
+# StackHealth CLI image — score any public GitHub repo from any CI pipeline
+# (GitLab, Jenkins, CircleCI, …) with no Node install required. Wraps the
+# `stackhealth` CLI (apps/cli), built from source so the image tracks this repo.
+#
+# Build from the repo root:
+#   docker build -f infra/Dockerfile.cli -t stackhealth-cli .
+#
+# Run — args after the image name pass straight through to the CLI:
+#   docker run --rm stackhealth-cli pallets/click --json
+#   docker run --rm stackhealth-cli my-org/my-repo --min-grade B   # exit 1 if below B
+
+FROM node:26-alpine AS build
+RUN npm install -g corepack@latest && corepack enable
+WORKDIR /repo
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/cli/package.json apps/cli/
+RUN pnpm install --frozen-lockfile
+COPY apps/cli apps/cli
+RUN pnpm --filter stackhealth build
+
+# Runtime — the CLI has zero production dependencies, so we ship only the
+# compiled output (plus its package.json for `"type": "module"`) on a clean
+# Node base. tsc emits per-file ESM, so the whole dist/ tree must travel.
+FROM node:26-alpine AS runtime
+LABEL org.opencontainers.image.source="https://github.com/santosh3743/stackhealth" \
+      org.opencontainers.image.description="StackHealth CLI — score any public GitHub repo against the open-formula benchmark." \
+      org.opencontainers.image.licenses="MIT"
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /repo/apps/cli/package.json ./
+COPY --from=build /repo/apps/cli/dist ./dist
+ENTRYPOINT ["node", "/app/dist/index.js"]
+CMD ["--help"]
