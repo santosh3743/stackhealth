@@ -1,0 +1,76 @@
+# Build and publish the StackHealth CLI container image to GitHub Container
+# Registry (ghcr.io/<owner>/stackhealth-cli), multi-arch amd64 + arm64.
+#
+# Tags:
+#   - push to main (CLI changed)  -> :latest and :<short-sha>   (rolling edge)
+#   - GitHub Release published     -> :X.Y.Z, :X.Y, :X          (semver)
+#   - pull request (CLI changed)   -> build only, no push       (validates the image)
+#   - workflow_dispatch            -> manual run
+#
+# Uses the `release` event (not git tags) for versioned publishes so this never
+# collides with the Action's floating `v0` tag.
+
+name: CLI image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/cli/**"
+      - "infra/Dockerfile.cli"
+      - ".github/workflows/cli-image.yml"
+  pull_request:
+    paths:
+      - "apps/cli/**"
+      - "infra/Dockerfile.cli"
+      - ".github/workflows/cli-image.yml"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push:
+    name: Build & push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      # Only authenticate when we actually push (skip on PRs / forks).
+      - name: Log in to ghcr.io
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/stackhealth-cli
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=,format=short,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/Dockerfile.cli
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

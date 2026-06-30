@@ -32,13 +32,19 @@ npm i -g stackhealth
 
 ### Docker (no Node required)
 
-For CI runners or any environment without Node, run the image instead — args
+For CI runners or any environment without Node, run the published image — args
 after the image name pass straight through to the CLI:
 
 ```bash
+docker run --rm ghcr.io/santosh3743/stackhealth-cli pallets/click --json
+docker run --rm ghcr.io/santosh3743/stackhealth-cli my-org/my-repo --min-grade B   # exit 1 if below B
+```
+
+The image is multi-arch (amd64 + arm64). `:latest` tracks `main`; released
+versions are tagged `:X.Y.Z`. To build it yourself instead:
+
+```bash
 docker build -f infra/Dockerfile.cli -t stackhealth-cli .   # from the repo root
-docker run --rm stackhealth-cli pallets/click --json
-docker run --rm stackhealth-cli my-org/my-repo --min-grade B   # exit 1 if below B
 ```
 
 Drop it into any pipeline (GitLab CI, Jenkins, CircleCI, …) the same way you'd
