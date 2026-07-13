@@ -28,7 +28,16 @@ jobs:
     # Skip when the PR comes from a fork — GITHUB_TOKEN can't comment
     # back and the scan still costs worker time. (Maintainers can
     # always re-run manually for fork PRs they want graded.)
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    #
+    # Also skip Dependabot PRs: they run in Dependabot's restricted
+    # context where Actions secrets (STACKHEALTH_EMAIL, _CI_TOKEN) are
+    # unavailable — so `email` resolves empty and the action hard-fails
+    # `Input required and not supplied: email` — and GITHUB_TOKEN is
+    # read-only, so the grade comment can't post anyway (same reason we
+    # skip forks). Dependency bumps aren't meaningful to dogfood.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
     steps:
       - uses: santosh3743/stackhealth@v0
         with:
