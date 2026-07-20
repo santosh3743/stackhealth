@@ -37,7 +37,7 @@ jobs:
       # pnpm reads its version from packageManager in package.json; don't
       # pass `version:` here or pnpm/action-setup errors with ERR_PNPM_BAD_PM_VERSION.
       - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 26
           cache: "pnpm"
